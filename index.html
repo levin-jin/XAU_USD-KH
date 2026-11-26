@@ -9,7 +9,7 @@
   <!-- Google Fonts: Kantumruy Pro, Inter, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600&family=Battambang:wght@400;700&family=Hanuman:wght@400;700&family=Siemreap&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600&family=Battambang:wght@400;700&family=Hanuman:wght@400;700&family=Siemreap&family=Koh+Santepheap:wght@400;700&family=Noto+Serif+Khmer:wght@400;600&family=Nokora:wght@400;700&family=Content:wght@400;700&display=swap" rel="stylesheet" />
   <script>
     tailwind.config = {
       theme: {
@@ -84,6 +84,10 @@
       table:has(#snapshots-tbody) :is(th, td):nth-child(3), table:has(#snapshots-tbody) :is(th, td):nth-child(4) { display: none; }
       .lc-seg button { padding: 3px 7px; }
     }
+    #lc-card.full { position: fixed; inset: 0; z-index: 70; border-radius: 0; display: flex; flex-direction: column; overflow: auto; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+    #lc-card.full #lc-wrap { height: auto; flex: 1; min-height: 240px; }
+    html.dark #lc-card.full { filter: none; }
+    body.lc-full { overflow: hidden; }
     /* Khmer typography */
     body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
     .lc-khmer { font-family: var(--kh),"Noto Sans Khmer",Inter,sans-serif; line-height: 1.6; }
@@ -113,6 +117,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
 
+  <button type="button" id="hdr-show" onclick="toggleHeader(false)" title="បង្ហាញ Header" class="hidden fixed top-2 right-2 z-40 w-9 h-9 rounded-full bg-slate-900/80 text-white text-sm shadow-lg border border-white/20 backdrop-blur">▼</button>
   <!-- Toast Notification Banner -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
     <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 text-sm font-medium border border-slate-700">
@@ -122,7 +127,7 @@
   </div>
 
   <!-- Top Terminal Header -->
-  <header class="bg-gradient-to-r from-slate-950 via-tealbrand-950 to-tealbrand-900 text-white shadow-lg sticky top-0 z-30 border-b border-teal-800/60">
+  <header id="app-header" class="bg-gradient-to-r from-slate-950 via-tealbrand-950 to-tealbrand-900 text-white shadow-lg sticky top-0 z-30 border-b border-teal-800/60">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-goldbrand-300 to-goldbrand-500 text-slate-950 font-extrabold text-sm flex flex-col items-center justify-center shadow-md shrink-0 border border-goldbrand-200 leading-none">
@@ -162,7 +167,7 @@
 
         <div class="flex items-center gap-1">
           <select id="font-sel" onchange="setFont(this.value)" title="ប្តូរ Font ខ្មែរ" class="text-xs bg-white/10 border border-white/15 rounded-lg px-1.5 py-1.5 text-teal-100 outline-none">
-            <option class="text-slate-900" value="Battambang">បាត់ដំបង</option><option class="text-slate-900" value="Noto Sans Khmer">Noto Sans</option><option class="text-slate-900" value="Hanuman">ហនុមាន</option><option class="text-slate-900" value="Siemreap">សៀមរាប</option><option class="text-slate-900" value="Kantumruy Pro">កន្ទ្រុម</option>
+            <option class="text-slate-900" value="Battambang">បាត់ដំបង</option><option class="text-slate-900" value="Noto Sans Khmer">Noto Sans</option><option class="text-slate-900" value="Hanuman">ហនុមាន</option><option class="text-slate-900" value="Siemreap">សៀមរាប</option><option class="text-slate-900" value="Kantumruy Pro">កន្ទ្រុម</option><option class="text-slate-900" value="Koh Santepheap">កោះសន្តិភាព</option><option class="text-slate-900" value="Nokora">នគរ</option><option class="text-slate-900" value="Content">Content</option><option class="text-slate-900" value="Noto Serif Khmer">Noto Serif</option>
           </select>
           <button type="button" onclick="bumpFs(-.08)" class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg text-teal-100 border border-white/15">A−</button>
           <button type="button" onclick="bumpFs(.08)" class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg text-teal-100 border border-white/15">A+</button>
@@ -171,6 +176,7 @@
         <button type="button" onclick="resetDefaults()" class="text-xs bg-white/10 hover:bg-white/20 active:scale-95 transition px-3 py-2 rounded-xl text-teal-100 font-medium border border-white/15 shrink-0">
           កំណត់ឡើងវិញ
         </button>
+        <button type="button" onclick="toggleHeader(true)" title="លាក់ Header" class="text-xs bg-white/10 hover:bg-white/20 px-2.5 py-2 rounded-xl text-teal-100 border border-white/15">▲</button>
       </div>
     </div>
   </header>
@@ -271,6 +277,7 @@
             <button type="button" onclick="lcZoom(.8)">🔍−</button>
             <button type="button" onclick="lcZoom(1.25)">🔍+</button>
             <button type="button" onclick="lcZoom(0)">↺</button>
+            <button type="button" id="lc-full-btn" onclick="lcFull()" title="ពេញអេក្រង់">⛶</button>
           </div>
           <div class="lc-seg" id="lc-tf-seg">
             <button type="button" data-tf="5" onclick="lcSetTf(5)">5វិ</button>
@@ -295,6 +302,26 @@
       </div>
       <div class="px-4 py-2 text-[10px] text-slate-500 border-t border-white/5">
         ដាក់ mouse លើក្រាប (ឬប៉ះ) មើលតម្លៃ • 🔍 ពង្រីក/បង្រួម • អូសរំកិល • ជ្រើស ថ្ងៃ/ខែ/ឆ្នាំ ខាងលើដើម្បីមើលប្រវត្តិ • ផ្ទាំងកញ្ចក់ថ្លាអាចមើលទិន្នន័យខាងក្រោយបាន • ពេលវេលាតាមម៉ោងភ្នំពេញ (UTC+7)
+      </div>
+    </section>
+
+    <!-- Market status + price comparison -->
+    <section class="grid lg:grid-cols-5 gap-3">
+      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="font-bold text-slate-800 text-sm">ស្ថានភាពទីផ្សារ XAU/USD</h3>
+          <span id="mk-badge" class="text-[11px] font-bold px-2.5 py-1 rounded-full border">-</span>
+        </div>
+        <p id="mk-count" class="text-xs text-slate-600"></p>
+        <div id="mk-prices" class="grid grid-cols-2 gap-2 text-xs"></div>
+        <p class="text-[10px] text-slate-400">ម៉ោងទីផ្សារ (ភ្នំពេញ, តាមម៉ោង EST)៖ បើក ចន្ទ 06:00 • បិទ សៅរ៍ 05:00 • សម្រាកជារៀងរាល់ថ្ងៃ 05:00–06:00 (អង្គារ–សុក្រ)។ តម្លៃបើក/បិទជាទិន្នន័យក្លែងធ្វើ។</p>
+      </div>
+      <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-200"><h3 class="font-bold text-slate-800 text-sm">ប្រៀបធៀបតម្លៃពេលមុនៗ ធៀបនឹងពេលនេះ</h3></div>
+        <table class="w-full text-left border-collapse">
+          <thead><tr class="bg-slate-50 text-slate-600 text-[11px] border-b border-slate-200 [&>th]:py-2 [&>th]:px-3 [&>th]:font-bold"><th>រយៈពេល</th><th>XAU/USD</th><th>ប្រែប្រួលមកពេលនេះ</th><th>ហាង ទិញ / លក់</th></tr></thead>
+          <tbody id="cmp-body" class="divide-y divide-slate-100 text-xs font-mono"></tbody>
+        </table>
       </div>
     </section>
 
@@ -790,7 +817,7 @@
           </div>
           <span id="chart-count-badge" class="text-[11px] font-mono text-slate-500">0 Snapshots</span>
         </div>
-        <div class="w-full h-52 bg-white rounded-xl border border-slate-200 p-2 relative overflow-hidden">
+        <div class="w-full h-56 sm:h-64 bg-white rounded-xl border border-slate-200 p-2 relative overflow-hidden">
           <svg id="history-svg-chart" class="w-full h-full" viewBox="0 0 800 180" preserveAspectRatio="none"></svg>
         </div>
       </div>
@@ -819,6 +846,7 @@
   <!-- Footer -->
   <footer class="bg-white border-t border-slate-200 mt-8 py-4 px-4 text-center text-xs text-slate-500">
     <p>XAU/USD Spot Gold & Cambodian Gold Shop Analyzer • ១ តម្លឹង = ៣៧.៥ ក្រាម (១ អោន = ៣១.១០៣៥ ក្រាម) • រក្សាទុកក្នុង Browser ស្វ័យប្រវត្តិ។</p>
+    <p class="mt-1.5 text-[11px] text-slate-400">© 11/2026 LEVI JIN. All rights reserved. Reproduction or redistribution is strictly prohibited.</p>
   </footer>
 
   <!-- Main Application Script -->
@@ -1048,6 +1076,7 @@
       analyzeActualShopPrice();
       renderLevelsTable();
       lcTick(state.xauPrice);
+      lcInfo();
     }
 
     function adjustXau(delta) {
@@ -1329,55 +1358,33 @@
     }
 
     function renderSVGChart() {
-      const svg = document.getElementById('history-svg-chart');
-      const data = state.snapshots;
-
-      if (data.length === 0) {
-        svg.innerHTML = `<text x="400" y="95" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="Kantumruy Pro, sans-serif">មិនមានទិន្នន័យសម្រាប់គូសក្រាហ្វនៅឡើយទេ</text>`;
-        return;
+      const svg = document.getElementById('history-svg-chart'), data = state.snapshots;
+      const r = svg.getBoundingClientRect(), W = Math.max(280, r.width || 800), H = Math.max(160, r.height || 220);
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      if (!data.length) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#94a3b8" font-size="13">មិនមានទិន្នន័យសម្រាប់គូសក្រាហ្វនៅឡើយទេ</text>`; return; }
+      const pl = 50, pr = 16, pt = 14, pb = 26, pw = W - pl - pr, ph = H - pt - pb, n = data.length;
+      const vals = data.flatMap(d => [d.worldBase, d.buyTael, d.sellTael]);
+      let lo = Math.min(...vals), hi = Math.max(...vals); const pd = (hi - lo) * 0.15 || 5; lo -= pd; hi += pd;
+      const X = i => n === 1 ? pl + pw / 2 : pl + i / (n - 1) * pw, Y = v => pt + (hi - v) / (hi - lo) * ph;
+      let g = '';
+      for (let i = 0; i <= 4; i++) {
+        const y = pt + i / 4 * ph;
+        g += `<line x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}" stroke="#e2e8f0"/><text x="${pl - 8}" y="${y + 3.5}" text-anchor="end" fill="#94a3b8" font-size="10" font-family="JetBrains Mono, monospace">${Math.round(hi - i / 4 * (hi - lo))}</text>`;
       }
-
-      const W = 800, H = 180;
-      const padL = 55, padR = 25, padT = 20, padB = 28;
-      const plotW = W - padL - padR;
-      const plotH = H - padT - padB;
-
-      const allVals = data.flatMap(d => [d.worldBase, d.buyTael, d.sellTael]);
-      const minVal = Math.min(...allVals) - 10;
-      const maxVal = Math.max(...allVals) + 10;
-      const range = Math.max(1, maxVal - minVal);
-
-      const getX = (idx) => data.length === 1 ? padL + plotW / 2 : padL + (idx / (data.length - 1)) * plotW;
-      const getY = (val) => padT + plotH - ((val - minVal) / range) * plotH;
-
-      let gridHtml = '';
-      for (let i = 0; i <= 3; i++) {
-        const y = padT + (i / 3) * plotH;
-        const val = maxVal - (i / 3) * range;
-        gridHtml += `
-          <line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="3,3" />
-          <text x="${padL - 6}" y="${y + 4}" text-anchor="end" fill="#64748b" font-size="10" font-family="JetBrains Mono, monospace">${Math.round(val)}</text>
-        `;
-      }
-
-      const buildPath = (key) => data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d[key]).toFixed(1)}`).join(' ');
-
-      const baseLine = data.length > 1 ? `<path d="${buildPath('worldBase')}" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3" />` : '';
-      const buyLine = data.length > 1 ? `<path d="${buildPath('buyTael')}" fill="none" stroke="#f59e0b" stroke-width="2.5" />` : '';
-      const sellLine = data.length > 1 ? `<path d="${buildPath('sellTael')}" fill="none" stroke="#0d9488" stroke-width="2.5" />` : '';
-
-      const dotsHtml = data.map((d, i) => {
-        const x = getX(i);
-        const shortTime = d.timestamp.slice(-5);
-        return `
-          <circle cx="${x}" cy="${getY(d.worldBase)}" r="3.5" fill="#94a3b8" />
-          <circle cx="${x}" cy="${getY(d.buyTael)}" r="4" fill="#f59e0b" />
-          <circle cx="${x}" cy="${getY(d.sellTael)}" r="4" fill="#0d9488" />
-          <text x="${x}" y="${H - 8}" text-anchor="middle" fill="#64748b" font-size="10" font-family="JetBrains Mono, monospace">${shortTime}</text>
-        `;
-      }).join('');
-
-      svg.innerHTML = gridHtml + baseLine + buyLine + sellLine + dotsHtml;
+      const path = key => {
+        const pts = data.map((d, i) => [X(i), Y(d[key])]); if (n < 2) return '';
+        let p = `M${pts[0][0]},${pts[0][1]}`;
+        for (let i = 0; i < n - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], cx = (x0 + x1) / 2; p += ` C${cx},${y0} ${cx},${y1} ${x1},${y1}`; }
+        return p;
+      };
+      const sp = path('sellTael'), area = n > 1 ? `<path d="${sp} L${X(n - 1)},${pt + ph} L${X(0)},${pt + ph}Z" fill="url(#hg)"/>` : '';
+      const line = (key, col, w, dash) => n > 1 ? `<path d="${path(key)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" ${dash ? 'stroke-dasharray="5,4"' : ''}/>` : '';
+      const dots = (key, col) => data.map((d, i) => `<circle cx="${X(i)}" cy="${Y(d[key])}" r="3.5" fill="#fff" stroke="${col}" stroke-width="2"><title>${d.timestamp} • XAU ${d.xau} • BUY ${d.buyTael} • SELL ${d.sellTael}</title></circle>`).join('');
+      const k = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(pw / 90))));
+      const xl = data.map((d, i) => i % k ? '' : `<text x="${Math.min(W - pr - 20, Math.max(pl + 20, X(i)))}" y="${H - 8}" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="JetBrains Mono, monospace">${d.timestamp.slice(5)}</text>`).join('');
+      svg.innerHTML = `<defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d9488" stop-opacity=".22"/><stop offset="1" stop-color="#0d9488" stop-opacity="0"/></linearGradient></defs>` +
+        g + area + line('worldBase', '#94a3b8', 1.5, true) + line('buyTael', '#f59e0b', 2.5) + line('sellTael', '#0d9488', 2.5) +
+        dots('worldBase', '#94a3b8') + dots('buyTael', '#f59e0b') + dots('sellTael', '#0d9488') + xl;
     }
 
     function exportCSV() {
@@ -1653,6 +1660,7 @@
       window.addEventListener('pointerup', () => { LC.drag = null; });
       cv.addEventListener('wheel', e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); lcZoom(e.deltaY < 0 ? 1.25 : 0.8); } }, { passive: false });
       lcBuildDaily();
+      window.addEventListener('resize', renderSVGChart);
       ['pointerleave', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => { LC.hover = null; lcReq(); }));
       if (document.fonts) document.fonts.ready.then(lcReq);
     }
@@ -1752,9 +1760,60 @@
       if (z) document.documentElement.style.setProperty('--fs', z);
     }
 
+    // ===== Header toggle / Fullscreen chart / Market status / Comparison =====
+    function toggleHeader(hide) {
+      document.getElementById('app-header').classList.toggle('hidden', hide);
+      document.getElementById('hdr-show').classList.toggle('hidden', !hide);
+    }
+    function lcFull() {
+      const c = document.getElementById('lc-card'), on = !c.classList.contains('full');
+      if (on) { LC.ph = document.createElement('div'); LC.ph.style.height = c.offsetHeight + 'px'; c.after(LC.ph); document.body.appendChild(c); }
+      else if (LC.ph) LC.ph.replaceWith(c);
+      c.classList.toggle('full', on); document.body.classList.toggle('lc-full', on);
+      document.getElementById('lc-full-btn').textContent = on ? '✕' : '⛶';
+      lcReq();
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('lc-card').classList.contains('full')) lcFull(); });
+
+    // Spot gold: opens Sun 23:00 UTC, closes Fri 22:00 UTC, daily break 22:00-23:00 UTC (Mon-Thu)
+    function mkOpenAt(t) {
+      const u = new Date(t), dw = u.getUTCDay(), m = u.getUTCHours() * 60 + u.getUTCMinutes(), w = dw * 1440 + m;
+      if (w < 1380 || w >= 8520) return false;
+      return !(dw >= 1 && dw <= 4 && m >= 1320 && m < 1380);
+    }
+    function mkStatus() {
+      const t = Math.floor(Date.now() / 6e4) * 6e4, o = mkOpenAt(t); let k = 1;
+      while (mkOpenAt(t + k * 6e4) === o && k < 10080) k++;
+      const d = Math.floor(k / 1440), h = Math.floor(k % 1440 / 60);
+      const b = document.getElementById('mk-badge');
+      b.textContent = o ? '🟢 ទីផ្សារកំពុងបើក' : '🔴 ទីផ្សារបិទ';
+      b.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full border ' + (o ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200');
+      document.getElementById('mk-count').textContent = (o ? 'បិទក្នុងរយៈពេល ' : 'បើកក្នុងរយៈពេល ') + (d ? d + ' ថ្ងៃ ' : '') + (h ? h + ' ម៉ោង ' : '') + (k % 60) + ' នាទី';
+    }
+
+    function lcInfo() {
+      if (DAILY.length < 3) return;
+      const n = DAILY.length, td = DAILY[n - 1], pv = DAILY[n - 2], P = state.xauPrice || td.c;
+      const hi = Math.max(td.h, P), lo = Math.min(td.l, P), ch = P - pv.c, pc = ch / pv.c * 100;
+      const chip = (l, v, c = '') => `<div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"><div class="text-[11px] text-slate-500">${l}</div><div class="font-mono font-bold ${c}">${v}</div></div>`;
+      document.getElementById('mk-prices').innerHTML = chip('តម្លៃបើកថ្ងៃនេះ (Open)', formatUSD(td.o, 2)) + chip('តម្លៃបិទម្សិលមិញ (Close)', formatUSD(pv.c, 2)) +
+        chip('ខ្ពស់ថ្ងៃនេះ', formatUSD(hi, 2)) + chip('ទាបថ្ងៃនេះ', formatUSD(lo, 2)) +
+        `<div class="col-span-2">${chip('ថ្ងៃនេះធៀបនឹងតម្លៃបិទម្សិលមិញ', `${ch >= 0 ? '+' : ''}${ch.toFixed(2)} (${pc.toFixed(2)}%)`, ch >= 0 ? 'text-emerald-600' : 'text-rose-600')}</div>`;
+      const T = new Date(td.t), Y = T.getUTCFullYear(), M = T.getUTCMonth(), D = T.getUTCDate();
+      const L = [['ម្សិលមិញ', Date.UTC(Y, M, D - 1)], ['៣ ថ្ងៃមុន', Date.UTC(Y, M, D - 3)], ['១ សប្តាហ៍មុន', Date.UTC(Y, M, D - 7)], ['២ សប្តាហ៍មុន', Date.UTC(Y, M, D - 14)], ['១ ខែមុន', Date.UTC(Y, M - 1, D)], ['៣ ខែមុន', Date.UTC(Y, M - 3, D)], ['១ ឆ្នាំមុន', Date.UTC(Y - 1, M, D)]];
+      document.getElementById('cmp-body').innerHTML = L.map(([lb, t]) => {
+        const c = DAILY[Math.round((t - D0) / DAY)], x = new Date(t);
+        const dt = `${pad2(x.getUTCDate())}/${pad2(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+        if (!c) return `<tr class="[&>td]:py-2 [&>td]:px-3"><td class="font-sans">${lb}<div class="text-[10px] text-slate-400 font-mono">${dt}</div></td><td colspan="3" class="text-slate-400 font-sans">គ្មានទិន្នន័យ</td></tr>`;
+        const d = P - c.c, p = d / c.c * 100, u = d >= 0, sh = computeShopPrices(c.c);
+        return `<tr class="[&>td]:py-2 [&>td]:px-3"><td class="font-sans font-semibold">${lb}<div class="text-[10px] text-slate-400 font-mono font-normal">${dt}</div></td><td>${formatUSD(c.c, 2)}</td><td class="font-bold ${u ? 'text-emerald-600' : 'text-rose-600'}">${u ? '+' : ''}${d.toFixed(2)}<div class="text-[10px] font-normal">${u ? '+' : ''}${p.toFixed(2)}%</div></td><td><span class="text-amber-600 font-bold">${formatNum(sh.buyTael, 0)}</span> / <span class="text-tealbrand-700 font-bold">${formatNum(sh.sellTael, 0)}</span></td></tr>`;
+      }).join('');
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       initDateTimeSelectors();
       lcInit();
+      mkStatus(); setInterval(mkStatus, 1000);
       uiInit();
       startLiveClocks();
       loadSnapshots();

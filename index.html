@@ -62,6 +62,28 @@
     html.dark body { background: #0a0f1a; }
     html.dark main, html.dark footer { filter: invert(.92) hue-rotate(180deg); }
     #lc-card { filter: invert(1) hue-rotate(180deg); }
+    /* ===== Phone layout ===== */
+    body { overflow-x: hidden; }
+    .grid > * { min-width: 0; }
+    #lc-wrap { height: clamp(300px, 55vh, 440px); }
+    @media (max-width: 640px) {
+      :root { --fs: 1; }
+      header { position: static !important; }
+      header p { display: none; }
+      main { padding-left: .55rem !important; padding-right: .55rem !important; padding-top: .7rem !important; gap: 0; }
+      main > * { margin-bottom: .8rem; }
+      section > .p-5, section > div > .p-5 { padding: .8rem !important; }
+      .px-5 { padding-left: .8rem !important; padding-right: .8rem !important; }
+      .text-5xl { font-size: 2.3rem !important; line-height: 1.15 !important; }
+      .text-4xl { font-size: 1.9rem !important; line-height: 1.15 !important; }
+      .text-3xl { font-size: 1.6rem !important; }
+      table :is(th, td) { padding-left: .45rem !important; padding-right: .45rem !important; }
+      /* history table: hide Open/High/Low so everything fits */
+      #lc-hist :is(th, td):nth-child(n+2):nth-child(-n+4) { display: none; }
+      /* snapshot table: hide World Base & Premium */
+      table:has(#snapshots-tbody) :is(th, td):nth-child(3), table:has(#snapshots-tbody) :is(th, td):nth-child(4) { display: none; }
+      .lc-seg button { padding: 3px 7px; }
+    }
     /* Khmer typography */
     body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
     .lc-khmer { font-family: var(--kh),"Noto Sans Khmer",Inter,sans-serif; line-height: 1.6; }
@@ -266,7 +288,7 @@
           </button>
         </div>
       </div>
-      <div class="relative h-[320px] sm:h-[400px] select-none">
+      <div id="lc-wrap" class="relative select-none">
         <canvas id="lc-canvas" class="absolute inset-0 w-full h-full" style="touch-action:pan-y;cursor:crosshair"></canvas>
         <span id="lc-dot" class="absolute left-0 top-0 pointer-events-none"><span class="absolute -left-1 -top-1 w-2 h-2 rounded-full bg-teal-300"></span><span class="pulse-dot absolute -left-1 -top-1 w-2 h-2 rounded-full bg-teal-300"></span></span>
         <div id="lc-tip" class="lc-glass absolute left-0 top-0 w-[200px] rounded-xl px-3 py-2.5 pointer-events-none opacity-0 text-white transition-opacity duration-100"></div>
@@ -1617,7 +1639,7 @@
       lcSeed(); lcSyncBtns();
       new ResizeObserver(() => {
         const r = wrap.getBoundingClientRect(), d = window.devicePixelRatio || 1;
-        LC.w = r.width; LC.h = r.height;
+        LC.w = r.width; LC.h = r.height; LC.pad.r = r.width < 520 ? 58 : 66;
         cv.width = r.width * d; cv.height = r.height * d;
         cv.getContext('2d').setTransform(d, 0, 0, d, 0, 0);
         lcReq();

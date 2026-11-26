@@ -256,6 +256,7 @@
             </div>
             <div class="flex items-baseline gap-2">
               <span id="lc-price" class="text-2xl font-bold font-mono">$0.00</span>
+              <span id="lc-unit-lbl" class="text-[11px] text-slate-400">$/អោន</span>
               <span id="lc-chg" class="text-[11px] font-mono font-semibold">+0.00 (0.00%)</span>
             </div>
           </div>
@@ -266,6 +267,11 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
+          <div class="lc-seg" title="ឯកតាតម្លៃ">
+            <button type="button" data-unit="oz" onclick="lcSetUnit('oz')">អោន</button>
+            <button type="button" data-unit="tael" onclick="lcSetUnit('tael')">តម្លឹង</button>
+            <button type="button" data-unit="chi" onclick="lcSetUnit('chi')">ជី</button>
+          </div>
           <div class="lc-seg">
             <button type="button" data-view="live" onclick="lcSetView('live')">Live</button>
             <button type="button" data-view="day" onclick="lcSetView('day')">ថ្ងៃ</button>
@@ -358,7 +364,7 @@
               </h2>
             </div>
             <span class="text-[11px] bg-tealbrand-800 text-teal-100 px-2.5 py-1 rounded-lg border border-teal-700 font-mono">
-              1 តម្លឹង = 37.5g = 1.20565 oz
+              ១ តម្លឹង = 26.84 ជី • ១ អោន = 8.33 ជី
             </span>
           </div>
 
@@ -1471,7 +1477,7 @@
     });
 
     // ===== Live Candle / Mountain Chart (canvas) =====
-    const LC = { mode: 'candle', tf: 15, candles: [], g: 'live', hist: [], z: 1, off: 0, drag: null, hover: null, w: 0, h: 0, view: null, raf: 0, pad: { l: 8, r: 66, t: 12, b: 22 } };
+    const LC = { mode: 'candle', tf: 15, candles: [], g: 'live', unit: 'oz', hist: [], z: 1, off: 0, drag: null, hover: null, w: 0, h: 0, view: null, raf: 0, pad: { l: 8, r: 66, t: 12, b: 22 } };
     const lcCv = () => document.getElementById('lc-canvas');
 
     function lcFmt(ms, full) {
@@ -1529,7 +1535,7 @@
       const n = Math.min(src.length, Math.max(5, Math.round(bn / LC.z)));
       LC.off = Math.max(0, Math.min(LC.off, src.length - n));
       const end = src.length - LC.off;
-      const vis = src.slice(end - n, end), area = LC.mode === 'area';
+      const U = lcU(), vis = src.slice(end - n, end).map(c => ({ ...c, o: c.o * U, h: c.h * U, l: c.l * U, c: c.c * U })), area = LC.mode === 'area';
       let lo = Infinity, hi = -Infinity;
       vis.forEach(c => { lo = Math.min(lo, area ? c.c : c.l); hi = Math.max(hi, area ? c.c : c.h); });
       const pv = (hi - lo) * 0.14 || 1; lo -= pv; hi += pv;
@@ -1601,7 +1607,7 @@
         ctx.fillStyle = 'rgba(226,232,240,.92)'; ctx.beginPath(); ctx.roundRect(lx - 30, h - pad.b + 3, 60, 16, 4); ctx.fill();
         ctx.fillStyle = '#0f172a'; ctx.textAlign = 'center'; ctx.fillText(c.lb || lcFmt(c.t), lx, h - pad.b + 11.5);
 
-        const sh = computeShopPrices(c.c), u = c.c >= c.o, kc = u ? 'text-emerald-300' : 'text-rose-300', pc = (c.c - c.o) / c.o * 100;
+        const sh = computeShopPrices(c.c / U), u = c.c >= c.o, kc = u ? 'text-emerald-300' : 'text-rose-300', pc = (c.c - c.o) / c.o * 100;
         const row = (l, v, cl = '') => `<span class="text-white/65">${l}</span><span class="text-right font-mono font-semibold ${cl}">${v}</span>`;
         tip.innerHTML = `
           <div class="flex items-center justify-between mb-1.5"><span class="font-mono text-[10px] text-white/75">${c.fl || lcFmt(c.t, 1)}</span><span class="font-mono text-[10px] font-bold ${kc}">${u ? '+' : ''}${pc.toFixed(3)}%</span></div>
@@ -1618,7 +1624,7 @@
       }
 
       // Header stats
-      const first = src[0], d = last.c - first.o, hp = d / first.o * 100, upH = d >= 0;
+      const first = { o: src[0].o * U }, d = last.c - first.o, hp = d / first.o * 100, upH = d >= 0;
       document.getElementById('lc-price').textContent = formatUSD(last.c, 2);
       const chg = document.getElementById('lc-chg');
       chg.textContent = `${upH ? '+' : ''}${d.toFixed(2)} (${upH ? '+' : ''}${hp.toFixed(2)}%)`;
@@ -1633,6 +1639,8 @@
     function lcSetMode(m) { LC.mode = m; lcSyncBtns(); lcReq(); }
     function lcSyncBtns() {
       document.querySelectorAll('[data-tf]').forEach(b => b.classList.toggle('on', +b.dataset.tf === LC.tf));
+      document.querySelectorAll('[data-unit]').forEach(b => b.classList.toggle('on', b.dataset.unit === LC.unit));
+      document.getElementById('lc-unit-lbl').textContent = { oz: '$/អោន', tael: '$/តម្លឹង', chi: '$/ជី' }[LC.unit];
       document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === LC.g));
       document.getElementById('lc-tf-seg').style.display = LC.g === 'live' ? '' : 'none';
       document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === LC.mode));
@@ -1674,6 +1682,8 @@
     const KM = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
     let DAILY = [];
     const lcSrc = () => LC.g === 'live' ? LC.candles : LC.hist;
+    const lcU = () => ({ oz: 1, tael: OZ_TO_TAEL, chi: OZ_TO_TAEL / 10 })[LC.unit];
+    function lcSetUnit(u) { LC.unit = u; lcSyncBtns(); lcTable(); lcReq(); }
     function lcZoom(f) { LC.z = f ? Math.min(8, Math.max(0.4, LC.z * f)) : 1; if (!f) LC.off = 0; lcReq(); }
 
     function lcBuildDaily() { // deterministic simulated daily OHLC, anchored so "today" = current price
@@ -1721,15 +1731,15 @@
       document.getElementById('lc-hist-title').textContent = T[LC.g];
       const sum = document.getElementById('lc-hist-sum'), tb = document.getElementById('lc-hist-body');
       if (!a.length) { sum.innerHTML = ''; tb.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400 font-sans">មិនទាន់មានទិន្នន័យសម្រាប់ពេលនេះ</td></tr>'; return; }
-      const hi = Math.max(...a.map(x => x.h)), lo = Math.min(...a.map(x => x.l)), ch = a[a.length - 1].c - a[0].o, pc = ch / a[0].o * 100;
-      const up = a.filter(x => x.c >= x.o).length, rg = a.reduce((t, x) => t + x.h - x.l, 0) / a.length;
+      const U = lcU(), hi = Math.max(...a.map(x => x.h)) * U, lo = Math.min(...a.map(x => x.l)) * U, ch = (a[a.length - 1].c - a[0].o) * U, pc = ch / (a[0].o * U) * 100;
+      const up = a.filter(x => x.c >= x.o).length, rg = a.reduce((t, x) => t + x.h - x.l, 0) / a.length * U;
       const chip = (l, v, c = '') => `<div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"><div class="text-[11px] text-slate-500">${l}</div><div class="font-mono font-bold ${c}">${v}</div></div>`;
       sum.innerHTML = chip('ខ្ពស់បំផុត', formatUSD(hi, 2)) + chip('ទាបបំផុត', formatUSD(lo, 2)) +
         chip('ផ្លាស់ប្តូរសរុប', `${ch >= 0 ? '+' : ''}${ch.toFixed(2)} (${pc.toFixed(2)}%)`, ch >= 0 ? 'text-emerald-600' : 'text-rose-600') +
         chip('ឡើង / ធ្លាក់', `${up} / ${a.length - up}`) + chip('ចន្លោះជាមធ្យម', formatUSD(rg, 2));
       tb.innerHTML = [...a].reverse().map(c => {
         const sh = computeShopPrices(c.c), p = (c.c - c.o) / c.o * 100, u = p >= 0;
-        return `<tr class="[&>td]:py-2 [&>td]:px-3 ${c.sel ? 'bg-amber-50 font-bold' : ''}"><td class="font-sans">${c.fl}</td><td>${formatNum(c.o, 2)}</td><td>${formatNum(c.h, 2)}</td><td>${formatNum(c.l, 2)}</td><td>${formatNum(c.c, 2)}</td><td class="font-bold ${u ? 'text-emerald-600' : 'text-rose-600'}">${u ? '+' : ''}${p.toFixed(2)}%</td><td class="font-bold text-amber-600">${formatNum(sh.buyTael, 0)}</td><td class="font-bold text-tealbrand-700">${formatNum(sh.sellTael, 0)}</td></tr>`;
+        return `<tr class="[&>td]:py-2 [&>td]:px-3 ${c.sel ? 'bg-amber-50 font-bold' : ''}"><td class="font-sans">${c.fl}</td><td>${formatNum(c.o * U, 2)}</td><td>${formatNum(c.h * U, 2)}</td><td>${formatNum(c.l * U, 2)}</td><td>${formatNum(c.c * U, 2)}</td><td class="font-bold ${u ? 'text-emerald-600' : 'text-rose-600'}">${u ? '+' : ''}${p.toFixed(2)}%</td><td class="font-bold text-amber-600">${formatNum(sh.buyTael, 0)}</td><td class="font-bold text-tealbrand-700">${formatNum(sh.sellTael, 0)}</td></tr>`;
       }).join('');
     }
 

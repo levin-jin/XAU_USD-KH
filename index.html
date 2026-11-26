@@ -343,6 +343,7 @@
             <b class="text-slate-700">ប្រវត្តិស្វ័យប្រវត្តិ (Twelve Data)</b>
             <input id="td-key" type="password" placeholder="API key" class="border border-slate-300 rounded-lg px-2 py-1 bg-white w-40" onchange="try{localStorage.setItem('td_key',this.value.trim())}catch(e){};tdLoadAll()" />
           </div>
+          <div id="td-usage" class="text-[11px] font-mono font-semibold text-slate-700">បញ្ចូល API key ដើម្បីមើលចំនួន API នៅសល់</div>
           <div id="td-status" class="text-[10px] text-slate-500">បញ្ចូល API key ឥតគិតថ្លៃពី <a class="underline" href="https://twelvedata.com/register" target="_blank" rel="noopener">twelvedata.com</a> ដើម្បីឱ្យប្រវត្តិ (ថ្ងៃ/1នាទី/5នាទី) ធ្វើបច្ចុប្បន្នភាពដោយខ្លួនឯង។ មិនបញ្ចូល = ប្រើទិន្នន័យ GC=F ក្នុងឯកសារ។</div>
         </div>
       </div>
@@ -847,6 +848,10 @@
           <button type="button" onclick="exportJSON()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition">
             ↓ Export JSON
           </button>
+          <button type="button" onclick="document.getElementById('snap-import').click()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition">
+            ↑ Import
+          </button>
+          <input type="file" id="snap-import" accept=".json,.csv,application/json,text/csv" class="hidden" onchange="importSnapshots(this)" />
           <button type="button" onclick="clearSnapshots()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition">
             លុបទាំងអស់
           </button>
@@ -1428,6 +1433,41 @@
         dots('worldBase', '#94a3b8') + dots('buyTael', '#f59e0b') + dots('sellTael', '#0d9488') + xl;
     }
 
+    function importSnapshots(inp) {
+      const f = inp.files && inp.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const txt = String(rd.result).replace(/^\uFEFF/, '').trim();
+          let rows;
+          if (/\.json$/i.test(f.name) || txt[0] === '[') {
+            rows = JSON.parse(txt);
+          } else {
+            rows = txt.split(/\r?\n/).slice(1).filter(Boolean).map((ln, i) => {
+              const c = ln.split(',');
+              return { id: Date.now() + i, timestamp: c[0], xau: +c[1], worldBase: +c[2], premium: +c[3], buyTael: +c[4], sellTael: +c[5] };
+            });
+          }
+          if (!Array.isArray(rows)) throw new Error('format');
+          const seen = new Set(state.snapshots.map(x => x.timestamp + '|' + x.xau));
+          let added = 0;
+          rows.forEach((r, i) => {
+            if (!r || !r.timestamp || !(r.xau > 0)) return;
+            const k = r.timestamp + '|' + r.xau;
+            if (seen.has(k)) return;
+            seen.add(k);
+            state.snapshots.push({ id: r.id || Date.now() + i, timestamp: String(r.timestamp), xau: +r.xau, worldBase: +r.worldBase, premium: +r.premium, buyTael: +r.buyTael, sellTael: +r.sellTael });
+            added++;
+          });
+          state.snapshots.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+          persistSnapshots(); renderSnapshotsAndChart();
+          showToast('បាននាំចូល ' + added + ' Snapshot ថ្មី (រំលងស្ទួន ' + (rows.length - added) + ')');
+        } catch (e) { showToast('នាំចូលមិនបាន៖ ឯកសារមិនត្រឹមត្រូវ'); }
+        inp.value = '';
+      };
+      rd.readAsText(f);
+    }
+
     function exportCSV() {
       if (state.snapshots.length === 0) {
         showToast('មិនមានទិន្នន័យសម្រាប់ Export ទេ!');
@@ -1976,6 +2016,7 @@ const GC_5M=[[29826960,433420,433460,433240,433280],[29826965,433260,433510,4331
     // ===== Twelve Data (spot XAU/USD history, automatic) =====
     async function tdSeries(interval) {
       const key = document.getElementById('td-key').value.trim();
+      tdLocalCalls++;
       const r = await fetch('https://api.twelvedata.com/time_series?symbol=XAU/USD&interval=' + interval + '&outputsize=5000&order=ASC&timezone=UTC&apikey=' + encodeURIComponent(key), { signal: AbortSignal.timeout(15000) });
       const j = await r.json();
       if (j.status === 'error' || !j.values) throw new Error(j.message || ('HTTP ' + r.status));
@@ -1986,16 +2027,43 @@ const GC_5M=[[29826960,433420,433460,433240,433280],[29826965,433260,433510,4331
       if (!key) return;
       st.textContent = 'កំពុងទាញប្រវត្តិ...';
       try {
-        const d = await tdSeries('1day'), m5 = await tdSeries('5min'), m1 = await tdSeries('1min');
-        if (d.length < 3) throw new Error('ទិន្នន័យរាយថ្ងៃតិចពេក');
-        DAILY = d; I5.length = 0; I5.push(...m5); I1.length = 0; I1.push(...m1);
+        // ទិន្នន័យរាយថ្ងៃ៖ ទាញម្តងក្នុងមួយម៉ោង (ឬពេលប្តូរ key) • 5នាទី/1នាទី៖ រៀងរាល់ 10 នាទី
+        const needDaily = key !== window.__tdKey || !window.__tdDailyAt || Date.now() - window.__tdDailyAt > 3600000;
+        const d = needDaily ? await tdSeries('1day') : null;
+        if (d && d.length < 3) throw new Error('ទិន្នន័យរាយថ្ងៃតិចពេក');
+        const m5 = await tdSeries('5min'), m1 = await tdSeries('1min');
+        if (d) { DAILY = d; window.__tdDailyAt = Date.now(); window.__tdKey = key; }
+        I5.length = 0; I5.push(...m5); I1.length = 0; I1.push(...m1);
         lcSeed(); handleXauChange(); lcRefresh();
         const t = new Date(Date.now() + 7 * 3600000);
-        st.textContent = '✓ ទិន្នន័យ spot XAU/USD ពិត • ' + d.length + ' ថ្ងៃ, ' + m5.length + ' candle 5នាទី, ' + m1.length + ' candle 1នាទី • ធ្វើបច្ចុប្បន្នភាព ' + pad2(t.getUTCHours()) + ':' + pad2(t.getUTCMinutes());
-        document.getElementById('mk-src-note').textContent = 'ប្រវត្តិ និងតម្លៃបើក/បិទ/ខ្ពស់/ទាប៖ spot XAU/USD ពី Twelve Data (ធ្វើបច្ចុប្បន្នភាពរៀងរាល់ 10 នាទី)។ តម្លៃបច្ចុប្បន្ន៖ gold-api.com។';
+        st.textContent = '✓ ទិន្នន័យ spot XAU/USD ពិត • ' + DAILY.length + ' ថ្ងៃ' + (d ? ' (ទើបទាញថ្មី)' : '') + ', ' + m5.length + ' candle 5នាទី, ' + m1.length + ' candle 1នាទី • ធ្វើបច្ចុប្បន្នភាព ' + pad2(t.getUTCHours()) + ':' + pad2(t.getUTCMinutes());
+        document.getElementById('mk-src-note').textContent = 'ប្រវត្តិ និងតម្លៃបើក/បិទ/ខ្ពស់/ទាប៖ spot XAU/USD ពី Twelve Data (5នាទី/1នាទី រៀងរាល់ 10 នាទី • រាយថ្ងៃរៀងរាល់ 1 ម៉ោង)។ តម្លៃបច្ចុប្បន្ន៖ gold-api.com។';
+        window.__tdLast = Date.now();
       } catch (e) { st.textContent = 'ទាញមិនបាន: ' + (e.message || e) + ' — ប្រើទិន្នន័យ GC=F ក្នុងឯកសារជំនួស។'; }
+      tdUsage();
     }
-    setInterval(() => { if (document.getElementById('td-key').value.trim()) tdLoadAll(); }, 600000);
+    // បើចង់ឱ្យគ្រប់ device ប្រើ key ដូចគ្នាដោយមិនបញ្ចូលម្តងទៀត ដាក់នៅទីនេះ (ប្រយ័ត្ន៖ អ្នកណាក៏មើលឃើញ key នៅក្នុង source ដែរ)
+    const TD_DEFAULT_KEY = '';
+    let tdLocalCalls = 0;
+    async function tdUsage() {
+      const el = document.getElementById('td-usage'), key = document.getElementById('td-key').value.trim();
+      if (!key) { el.textContent = 'បញ្ចូល API key ដើម្បីមើលចំនួន API នៅសល់'; el.style.color = ''; return; }
+      try {
+        const r = await fetch('https://api.twelvedata.com/api_usage?apikey=' + encodeURIComponent(key), { signal: AbortSignal.timeout(8000) });
+        const j = await r.json();
+        if (j.status === 'error' || j.plan_daily_limit == null) throw new Error(j.message || 'no data');
+        const used = Number(j.daily_usage ?? j.plan_daily_usage ?? j.current_usage_daily), lim = Number(j.plan_daily_limit);
+        if (!isFinite(used) || !isFinite(lim)) throw new Error('រូបមន្តទិន្នន័យមិនស្គាល់');
+        const left = Math.max(lim - used, 0);
+        el.textContent = 'API ថ្ងៃនេះ៖ ប្រើ ' + used + ' / ' + lim + ' • នៅសល់ ' + left + (left < lim * 0.1 ? ' ⚠️ ជិតអស់' : '') + ' • នាទីនេះ ' + j.current_usage + '/' + j.plan_limit;
+        el.style.color = left < lim * 0.1 ? '#dc2626' : '#475569';
+      } catch (e) {
+        el.textContent = 'API: ទាញចំនួនប្រើមិនបាន (' + (e.message || e) + ') • ទំព័រនេះហៅបាន ~' + tdLocalCalls + ' request ចាប់តាំងពីបើក';
+      }
+    }
+    // ធ្វើបច្ចុប្បន្នភាពរៀងរាល់ 10 នាទី ប៉ុន្តែរំលងពេល tab លាក់ ដើម្បីសន្សំ API (1 ដង = 3 request)
+    setInterval(() => { if (!document.hidden && document.getElementById('td-key').value.trim()) tdLoadAll(); }, 600000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && document.getElementById('td-key').value.trim() && Date.now() - (window.__tdLast || 0) > 600000) tdLoadAll(); });
 
     window.addEventListener('DOMContentLoaded', () => {
       initDateTimeSelectors();
@@ -2006,6 +2074,7 @@ const GC_5M=[[29826960,433420,433460,433240,433280],[29826965,433260,433510,4331
       loadSnapshots();
       handleXauChange();
       try { document.getElementById('fx-key').value = localStorage.getItem('art_key') || ''; document.getElementById('td-key').value = localStorage.getItem('td_key') || ''; } catch (e) {}
+      if (!document.getElementById('td-key').value && typeof TD_DEFAULT_KEY === 'string') document.getElementById('td-key').value = TD_DEFAULT_KEY;
       realInit().then(() => tdLoadAll());
     });
   </script>

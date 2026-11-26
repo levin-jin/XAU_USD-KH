@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XAU/USD Live Market & Huy Keang Gold Analyzer | កម្មវិធីវិភាគ និងបំប្លែងតម្លៃមាស</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Kantumruy Pro, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Kantumruy+Pro:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600&family=Battambang:wght@400;700&family=Hanuman:wght@400;700&family=Siemreap&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['var(--kh)', '"Noto Sans Khmer"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'Inter', 'monospace'],
+          },
+          colors: {
+            tealbrand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+              950: '#042f2e',
+            },
+            goldbrand: {
+              200: '#fef08a',
+              300: '#fde047',
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Hide native number spin buttons for cleaner financial inputs */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    :root { --kh: "Battambang"; --fs: 1.12; }
+    html { font-size: calc(16px * var(--fs)); }
+    body { line-height: 1.7; }
+    .text-xs, .text-sm { line-height: 1.65 !important; }
+    .text-\[9px\] { font-size: calc(10.5px * var(--fs)) !important; }
+    .text-\[10px\] { font-size: calc(11.5px * var(--fs)) !important; }
+    .text-\[11px\] { font-size: calc(12.5px * var(--fs)) !important; }
+    /* Dark / light: whole page inverted in dark mode; chart card is authored dark and flips opposite */
+    html.dark body { background: #0a0f1a; }
+    html.dark main, html.dark footer { filter: invert(.92) hue-rotate(180deg); }
+    #lc-card { filter: invert(1) hue-rotate(180deg); }
+    /* Khmer typography */
+    body { text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+    .lc-khmer { font-family: var(--kh),"Noto Sans Khmer",Inter,sans-serif; line-height: 1.6; }
+    /* Liquid-glass tooltip: see candles through it */
+    .lc-glass {
+      background: linear-gradient(135deg, rgba(255,255,255,.17), rgba(255,255,255,.05));
+      -webkit-backdrop-filter: blur(3px) saturate(1.6);
+      backdrop-filter: blur(3px) saturate(1.6);
+      border: 1px solid rgba(255,255,255,.28);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.35);
+      text-shadow: 0 1px 2px rgba(0,0,0,.55);
+    }
+    .lc-seg { display:inline-flex; padding:2px; gap:2px; border-radius:10px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); }
+    .lc-seg button { font-size:calc(12px * var(--fs)); padding:3px 9px; border-radius:8px; color:#94a3b8; transition:.15s; white-space:nowrap; }
+    .lc-seg button:hover { color:#e2e8f0; }
+    .lc-seg button.on { background:rgba(255,255,255,.16); color:#fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+    /* Subtle live status pulse */
+    .pulse-dot {
+      animation: pulseRing 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.9; }
+      70% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(0.95); opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Toast Notification Banner -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 text-sm font-medium border border-slate-700">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+      <span id="toast-message">រួចរាល់!</span>
+    </div>
+  </div>
+
+  <!-- Top Terminal Header -->
+  <header class="bg-gradient-to-r from-slate-950 via-tealbrand-950 to-tealbrand-900 text-white shadow-lg sticky top-0 z-30 border-b border-teal-800/60">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-goldbrand-300 to-goldbrand-500 text-slate-950 font-extrabold text-sm flex flex-col items-center justify-center shadow-md shrink-0 border border-goldbrand-200 leading-none">
+          <span>XAU</span>
+          <span class="text-[9px] font-bold tracking-wider mt-0.5">/USD</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-sm sm:text-lg font-bold leading-snug text-white">
+              XAU/USD Spot & ហាងឆេងមាស ហ៊ុយគាំង (Huy Keang)
+            </h1>
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              XAU/USD Standard
+            </span>
+          </div>
+          <p class="text-xs text-teal-200/90">
+            ប្រព័ន្ធវិភាគតម្លៃមាសអន្តរជាតិ XAU/USD និងបំប្លែងតម្លៃហាងក្នុងស្រុក (តម្លឹង • ជី • ហ៊ុន)
+          </p>
+        </div>
+      </div>
+
+      <!-- Live Clocks & Market Session Status -->
+      <div class="flex items-center gap-2.5 sm:gap-4 ml-auto">
+        <div class="hidden md:flex flex-col items-end text-right bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+          <div class="flex items-center gap-1.5 text-[11px] text-teal-200">
+            <span class="relative flex h-2 w-2">
+              <span class="pulse-dot absolute inline-flex h-full w-full rounded-full bg-emerald-400"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+            </span>
+            <span>ភ្នំពេញ (UTC+7):</span>
+            <span id="clock-pnh" class="font-mono font-bold text-white">--:--:--</span>
+          </div>
+          <div class="text-[10px] text-slate-300 font-mono">
+            NY (EST): <span id="clock-ny">--:--</span> • <span id="market-session-badge" class="text-goldbrand-300 font-sans font-semibold">Asian Session</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1">
+          <select id="font-sel" onchange="setFont(this.value)" title="ប្តូរ Font ខ្មែរ" class="text-xs bg-white/10 border border-white/15 rounded-lg px-1.5 py-1.5 text-teal-100 outline-none">
+            <option class="text-slate-900" value="Battambang">បាត់ដំបង</option><option class="text-slate-900" value="Noto Sans Khmer">Noto Sans</option><option class="text-slate-900" value="Hanuman">ហនុមាន</option><option class="text-slate-900" value="Siemreap">សៀមរាប</option><option class="text-slate-900" value="Kantumruy Pro">កន្ទ្រុម</option>
+          </select>
+          <button type="button" onclick="bumpFs(-.08)" class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg text-teal-100 border border-white/15">A−</button>
+          <button type="button" onclick="bumpFs(.08)" class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1.5 rounded-lg text-teal-100 border border-white/15">A+</button>
+          <button type="button" id="theme-btn" onclick="toggleTheme()" title="Dark / Light" class="text-xs bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg border border-white/15">🌙</button>
+        </div>
+        <button type="button" onclick="resetDefaults()" class="text-xs bg-white/10 hover:bg-white/20 active:scale-95 transition px-3 py-2 rounded-xl text-teal-100 font-medium border border-white/15 shrink-0">
+          កំណត់ឡើងវិញ
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-5 space-y-6">
+
+    <!-- Top Control Bar: Granular Date & Time Selector + Live Simulation & Snapshot -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <!-- Year, Month, Day, Hour, Minute Selector -->
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-tealbrand-800 bg-tealbrand-50 px-2.5 py-0.5 rounded-md border border-tealbrand-200">
+              កំណត់កាលបរិច្ឆេទ & ម៉ោងវិភាគ (ឆ្នាំ • ខែ • ថ្ងៃ • ម៉ោង • នាទី)
+            </span>
+            <button type="button" onclick="setNowTimestamp()" class="text-xs font-semibold text-tealbrand-700 hover:text-tealbrand-900 underline">
+              ↻ កំណត់ម៉ោងបច្ចុប្បន្ន (UTC+7)
+            </button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <div class="flex items-center bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5">
+              <label for="dt-year" class="text-[11px] text-slate-500 mr-1.5 font-semibold">ឆ្នាំ</label>
+              <select id="dt-year" onchange="onTimestampChange()" class="bg-transparent font-mono text-sm font-bold text-slate-800 outline-none">
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+
+            <div class="flex items-center bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5">
+              <label for="dt-month" class="text-[11px] text-slate-500 mr-1.5 font-semibold">ខែ</label>
+              <select id="dt-month" onchange="onTimestampChange()" class="bg-transparent font-mono text-sm font-bold text-slate-800 outline-none"></select>
+            </div>
+
+            <div class="flex items-center bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5">
+              <label for="dt-day" class="text-[11px] text-slate-500 mr-1.5 font-semibold">ថ្ងៃ</label>
+              <select id="dt-day" onchange="onTimestampChange()" class="bg-transparent font-mono text-sm font-bold text-slate-800 outline-none"></select>
+            </div>
+
+            <span class="text-slate-300 font-bold hidden sm:inline">|</span>
+
+            <div class="flex items-center bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5">
+              <label for="dt-hour" class="text-[11px] text-slate-500 mr-1.5 font-semibold">ម៉ោង</label>
+              <select id="dt-hour" onchange="onTimestampChange()" class="bg-transparent font-mono text-sm font-bold text-slate-800 outline-none"></select>
+            </div>
+
+            <div class="flex items-center bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5">
+              <label for="dt-minute" class="text-[11px] text-slate-500 mr-1.5 font-semibold">នាទី</label>
+              <select id="dt-minute" onchange="onTimestampChange()" class="bg-transparent font-mono text-sm font-bold text-slate-800 outline-none"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Simulation & Snapshot Actions -->
+        <div class="flex flex-wrap items-center gap-2.5 lg:justify-end border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-100">
+          <button type="button" id="btn-live-sim" onclick="toggleLiveSimulation()" class="px-3.5 py-2.5 rounded-xl text-xs font-bold border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 transition flex items-center gap-2">
+            <span id="sim-dot" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+            <span id="sim-label">បើកតម្លៃ XAU/USD រត់ Live</span>
+          </button>
+
+          <button type="button" onclick="saveSnapshot()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-tealbrand-700 hover:bg-tealbrand-800 active:scale-95 text-white shadow-sm transition flex items-center gap-1.5">
+            <span>+ រក្សាទុក Snapshot</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Candle / Mountain Chart -->
+    <section id="lc-card" class="lc-khmer rounded-2xl overflow-hidden border border-slate-800 shadow-sm text-slate-100" style="background:radial-gradient(120% 140% at 0% 0%,#0f2a2e 0%,#0b1220 55%,#070b14 100%)">
+      <div class="px-4 pt-3 pb-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+        <div class="flex flex-wrap items-end gap-x-5 gap-y-1">
+          <div>
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+              <span class="font-mono font-semibold text-slate-200">XAU/USD</span>
+              <span>•</span><span>ក្រាហ្វ Live</span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="lc-price" class="text-2xl font-bold font-mono">$0.00</span>
+              <span id="lc-chg" class="text-[11px] font-mono font-semibold">+0.00 (0.00%)</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] pb-1">
+            <span class="text-slate-400">ខ្ពស់ <b id="lc-hi" class="font-mono text-slate-200">-</b></span>
+            <span class="text-slate-400">ទាប <b id="lc-lo" class="font-mono text-slate-200">-</b></span>
+            <span class="hidden sm:inline text-slate-400">ហាងទិញ <b id="lc-buy" class="font-mono text-amber-300">-</b> / លក់ <b id="lc-sell" class="font-mono text-teal-200">-</b></span>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="lc-seg">
+            <button type="button" data-view="live" onclick="lcSetView('live')">Live</button>
+            <button type="button" data-view="day" onclick="lcSetView('day')">ថ្ងៃ</button>
+            <button type="button" data-view="week" onclick="lcSetView('week')">សប្តាហ៍</button>
+            <button type="button" data-view="month" onclick="lcSetView('month')">ខែ</button>
+            <button type="button" data-view="year" onclick="lcSetView('year')">ឆ្នាំ</button>
+          </div>
+          <div class="lc-seg" title="Zoom (Ctrl+Wheel) • អូសដើម្បីរំកិល">
+            <button type="button" onclick="lcZoom(.8)">🔍−</button>
+            <button type="button" onclick="lcZoom(1.25)">🔍+</button>
+            <button type="button" onclick="lcZoom(0)">↺</button>
+          </div>
+          <div class="lc-seg" id="lc-tf-seg">
+            <button type="button" data-tf="5" onclick="lcSetTf(5)">5វិ</button>
+            <button type="button" data-tf="15" onclick="lcSetTf(15)">15វិ</button>
+            <button type="button" data-tf="60" onclick="lcSetTf(60)">1នាទី</button>
+            <button type="button" data-tf="300" onclick="lcSetTf(300)">5នាទី</button>
+          </div>
+          <div class="lc-seg">
+            <button type="button" data-mode="candle" onclick="lcSetMode('candle')">🕯 Candle</button>
+            <button type="button" data-mode="area" onclick="lcSetMode('area')">⛰ Mountain</button>
+          </div>
+          <button type="button" id="lc-live-btn" onclick="toggleLiveSimulation()" class="flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-[10px] border border-white/15 bg-white/5 hover:bg-white/10 transition">
+            <span id="lc-live-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+            <span id="lc-live-txt">បើក Live</span>
+          </button>
+        </div>
+      </div>
+      <div class="relative h-[320px] sm:h-[400px] select-none">
+        <canvas id="lc-canvas" class="absolute inset-0 w-full h-full" style="touch-action:pan-y;cursor:crosshair"></canvas>
+        <span id="lc-dot" class="absolute left-0 top-0 pointer-events-none"><span class="absolute -left-1 -top-1 w-2 h-2 rounded-full bg-teal-300"></span><span class="pulse-dot absolute -left-1 -top-1 w-2 h-2 rounded-full bg-teal-300"></span></span>
+        <div id="lc-tip" class="lc-glass absolute left-0 top-0 w-[200px] rounded-xl px-3 py-2.5 pointer-events-none opacity-0 text-white transition-opacity duration-100"></div>
+      </div>
+      <div class="px-4 py-2 text-[10px] text-slate-500 border-t border-white/5">
+        ដាក់ mouse លើក្រាប (ឬប៉ះ) មើលតម្លៃ • 🔍 ពង្រីក/បង្រួម • អូសរំកិល • ជ្រើស ថ្ងៃ/ខែ/ឆ្នាំ ខាងលើដើម្បីមើលប្រវត្តិ • ផ្ទាំងកញ្ចក់ថ្លាអាចមើលទិន្នន័យខាងក្រោយបាន • ពេលវេលាតាមម៉ោងភ្នំពេញ (UTC+7)
+      </div>
+    </section>
+
+    <!-- History records -->
+    <section id="lc-hist" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-slate-200">
+        <h3 id="lc-hist-title" class="font-bold text-slate-800 text-sm">កំណត់ត្រា</h3>
+        <p class="text-[11px] text-slate-500">ទិន្នន័យប្រវត្តិជាការក្លែងធ្វើ (សម្រាប់បង្ហាញ) • ជួរពណ៌លឿង = ពេលដែលអ្នកបានជ្រើសរើស</p>
+      </div>
+      <div id="lc-hist-sum" class="grid grid-cols-2 sm:grid-cols-5 gap-2 p-4 border-b border-slate-100"></div>
+      <div class="overflow-auto max-h-[360px]">
+        <table class="w-full text-left border-collapse">
+          <thead class="sticky top-0 z-10"><tr class="bg-slate-50 text-slate-600 text-[11px] border-b border-slate-200 [&>th]:py-2.5 [&>th]:px-3 [&>th]:font-bold">
+            <th>ពេលវេលា</th><th>បើក</th><th>ខ្ពស់</th><th>ទាប</th><th>បិទ</th><th>±%</th><th class="text-amber-700">WE BUY</th><th class="text-tealbrand-700">WE SELL</th>
+          </tr></thead>
+          <tbody id="lc-hist-body" class="divide-y divide-slate-100 text-xs font-mono"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Primary Grid: Left (XAU/USD Converter & Physical Calculator) | Right (Reverse Premium & Levels) -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+      <!-- LEFT COLUMN (7 cols) -->
+      <div class="xl:col-span-7 space-y-6">
+
+        <!-- Card 1: Exclusive XAU/USD Benchmark & Huy Keang Price Converter -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+          <div class="bg-tealbrand-900 px-5 py-3.5 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-goldbrand-400 text-tealbrand-950 font-bold text-xs flex items-center justify-center">១</span>
+              <h2 class="text-white font-semibold text-sm sm:text-base">
+                បំប្លែងតម្លៃ XAU/USD មកជាតម្លៃហាង ហ៊ុយគាំង
+              </h2>
+            </div>
+            <span class="text-[11px] bg-tealbrand-800 text-teal-100 px-2.5 py-1 rounded-lg border border-teal-700 font-mono">
+              1 តម្លឹង = 37.5g = 1.20565 oz
+            </span>
+          </div>
+
+          <div class="p-5 space-y-5">
+            <!-- Sole Benchmark Badge + XAU/USD Input + World Base -->
+            <div class="flex items-center justify-between bg-tealbrand-50/80 border border-tealbrand-200/80 px-3.5 py-2 rounded-xl text-xs">
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold font-mono text-tealbrand-900 bg-white px-2.5 py-0.5 rounded-md border border-tealbrand-200">
+                  XAU/USD (Spot Gold)
+                </span>
+                <span class="text-tealbrand-800 font-medium">ស្តង់ដារអន្តរជាតិតែមួយគត់ (USD / 1 Troy oz)</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch">
+              <!-- Direct XAU/USD Input -->
+              <div class="md:col-span-6 space-y-2">
+                <div class="flex items-center justify-between">
+                  <label for="xau-price" class="text-xs font-bold text-slate-700">
+                    តម្លៃ XAU/USD បច្ចុប្បន្ន ($ / 1 oz)
+                  </label>
+                  <span class="text-[11px] font-mono text-tealbrand-700 font-semibold">
+                    Spot Standard
+                  </span>
+                </div>
+                <div class="relative flex items-center">
+                  <span class="absolute left-3.5 text-slate-400 font-bold text-lg">$</span>
+                  <input
+                    type="number"
+                    id="xau-price"
+                    step="0.1"
+                    value="3586.00"
+                    oninput="handleXauChange()"
+                    class="w-full pl-8 pr-16 py-3 text-2xl font-extrabold font-mono text-slate-900 bg-slate-50 border-2 border-tealbrand-600/50 focus:border-tealbrand-600 focus:bg-white rounded-xl outline-none transition"
+                  />
+                  <span class="absolute right-3 text-[11px] font-bold text-slate-500 bg-slate-200/80 px-2 py-1 rounded-md">
+                    USD/oz
+                  </span>
+                </div>
+
+                <!-- Quick Adjustment Buttons (-$5, -$1, +$1, +$5) -->
+                <div class="grid grid-cols-4 gap-1.5 pt-0.5">
+                  <button type="button" onclick="adjustXau(-5)" class="py-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition">-$5</button>
+                  <button type="button" onclick="adjustXau(-1)" class="py-1.5 text-xs font-bold rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition">-$1</button>
+                  <button type="button" onclick="adjustXau(1)" class="py-1.5 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition">+$1</button>
+                  <button type="button" onclick="adjustXau(5)" class="py-1.5 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition">+$5</button>
+                </div>
+              </div>
+
+              <!-- World Base Price Box (1 Tamlung & 1 Chi) -->
+              <div class="md:col-span-6 bg-slate-900 text-white rounded-xl p-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-slate-300">តម្លៃដើម XAU/USD (មិនទាន់បូកថ្លៃហាង)</span>
+                  <span class="text-[11px] font-mono text-goldbrand-300">× 1.20565</span>
+                </div>
+                <div class="my-2 flex items-baseline justify-between">
+                  <div>
+                    <span id="raw-tael-price" class="text-2xl font-extrabold font-mono text-white">$4,323.46</span>
+                    <span class="text-xs text-slate-400 ml-1">/ ១ តម្លឹង</span>
+                  </div>
+                  <div class="text-right">
+                    <span id="raw-chi-price" class="text-sm font-bold font-mono text-teal-300">$432.35</span>
+                    <span class="text-[11px] text-slate-400 block">/ ១ ជី</span>
+                  </div>
+                </div>
+                <div class="text-[11px] text-slate-400 flex justify-between border-t border-slate-800 pt-2">
+                  <span>តម្លៃ ១ ក្រាម៖ <strong id="raw-gram-price" class="text-slate-200 font-mono">$115.29</strong></span>
+                  <span>(37.5g / តម្លឹង)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Market Regime Quick Presets -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">ស្ថានភាពទីផ្សារ XAU/USD (កំណត់គម្លាតបន្ថែមហាង)៖</span>
+                <button type="button" onclick="toggleSettings()" class="text-xs font-semibold text-tealbrand-700 hover:underline">
+                  កែសម្រួលរូបមន្ត ▾
+                </button>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button type="button" id="preset-surge" onclick="applyMarketPreset(15, 'surge')" class="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100/80 text-left transition">
+                  <div class="text-xs font-bold text-emerald-800">ទីផ្សារស្ទុះឡើងលឿន</div>
+                  <div class="text-[11px] text-emerald-700 font-mono mt-0.5">Shop Premium: +$15</div>
+                </button>
+                <button type="button" id="preset-normal" onclick="applyMarketPreset(25, 'normal')" class="p-2.5 rounded-xl border-2 border-tealbrand-600 bg-tealbrand-50 text-left transition">
+                  <div class="text-xs font-bold text-tealbrand-900">ទីផ្សារដើរធម្មតា</div>
+                  <div class="text-[11px] text-tealbrand-700 font-mono mt-0.5">Shop Premium: +$25</div>
+                </button>
+                <button type="button" id="preset-drop" onclick="applyMarketPreset(35, 'drop')" class="p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100/80 text-left transition">
+                  <div class="text-xs font-bold text-rose-800">ទីផ្សារធ្លាក់ចុះលឿន</div>
+                  <div class="text-[11px] text-rose-700 font-mono mt-0.5">Shop Premium: +$35</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Shop Spread & Rounding Controls -->
+            <div id="formula-settings" class="bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label for="shop-premium" class="block text-[11px] font-bold text-slate-700 mb-1">
+                  គម្លាតបន្ថែមហាង (+$/តម្លឹង)
+                </label>
+                <div class="relative">
+                  <input type="number" id="shop-premium" value="25" step="1" oninput="handleXauChange()" class="w-full px-3 py-1.5 text-sm font-bold font-mono bg-white border border-amber-300 rounded-lg focus:border-tealbrand-600 outline-none" />
+                  <span class="absolute right-2.5 top-1.5 text-xs text-slate-400">+$</span>
+                </div>
+              </div>
+
+              <div>
+                <label for="shop-spread" class="block text-[11px] font-bold text-slate-700 mb-1">
+                  គម្លាតទិញ-លក់ ($/តម្លឹង)
+                </label>
+                <div class="relative">
+                  <input type="number" id="shop-spread" value="20" step="1" oninput="handleXauChange()" class="w-full px-3 py-1.5 text-sm font-bold font-mono bg-white border border-amber-300 rounded-lg focus:border-tealbrand-600 outline-none" />
+                  <span class="absolute right-2.5 top-1.5 text-xs text-slate-400">$</span>
+                </div>
+              </div>
+
+              <div>
+                <label for="round-step" class="block text-[11px] font-bold text-slate-700 mb-1">
+                  ការបង្គត់ខ្ទង់ (MROUND)
+                </label>
+                <select id="round-step" onchange="handleXauChange()" class="w-full px-2.5 py-1.5 text-xs font-bold bg-white border border-amber-300 rounded-lg focus:border-tealbrand-600 outline-none">
+                  <option value="5" selected>MROUND $5 (ឧ. 4350, 4355)</option>
+                  <option value="1">MROUND $1 (លេខគត់ $1)</option>
+                  <option value="0">Exact (មិនបង្គត់)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Main WE BUY & WE SELL Output Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- WE BUY -->
+              <div class="rounded-2xl border-2 border-amber-400/80 bg-gradient-to-br from-amber-50 via-white to-amber-50/40 p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold tracking-wide text-amber-800 bg-amber-200/70 px-2.5 py-1 rounded-lg">
+                    ទិញចូល • WE BUY
+                  </span>
+                  <button type="button" onclick="copyValue('est-buy-tael', 'តម្លៃទិញចូល ១ តម្លឹង')" class="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                    ចម្លង
+                  </button>
+                </div>
+                <div class="mt-3 flex items-baseline gap-2">
+                  <span id="est-buy-tael" class="text-4xl sm:text-5xl font-extrabold font-mono text-amber-500 tracking-tight">4,350</span>
+                  <span class="text-xs font-bold text-slate-500">USD / តម្លឹង</span>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-amber-200/70 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span class="text-slate-500 block">១ ជី (3.75g)៖</span>
+                    <span id="est-buy-chi" class="font-bold font-mono text-slate-800">$435.00</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-slate-500 block">១ ក្រាម៖</span>
+                    <span id="est-buy-gram" class="font-bold font-mono text-slate-800">$116.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- WE SELL -->
+              <div class="rounded-2xl border-2 border-tealbrand-600/50 bg-gradient-to-br from-tealbrand-50 via-white to-tealbrand-50/40 p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-extrabold tracking-wide text-tealbrand-900 bg-tealbrand-100 px-2.5 py-1 rounded-lg">
+                    លក់ចេញ • WE SELL
+                  </span>
+                  <button type="button" onclick="copyValue('est-sell-tael', 'តម្លៃលក់ចេញ ១ តម្លឹង')" class="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                    ចម្លង
+                  </button>
+                </div>
+                <div class="mt-3 flex items-baseline gap-2">
+                  <span id="est-sell-tael" class="text-4xl sm:text-5xl font-extrabold font-mono text-tealbrand-700 tracking-tight">4,370</span>
+                  <span class="text-xs font-bold text-slate-500">USD / តម្លឹង</span>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-tealbrand-200/70 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span class="text-slate-500 block">១ ជី (3.75g)៖</span>
+                    <span id="est-sell-chi" class="font-bold font-mono text-slate-800">$437.00</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-slate-500 block">១ ក្រាម៖</span>
+                    <span id="est-sell-gram" class="font-bold font-mono text-slate-800">$116.53</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 2: Practical Physical Gold Transaction Calculator (តម្លឹង • ជី • ហ៊ុន + ថ្លៃឈ្នួល) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+          <div class="bg-slate-800 px-5 py-3.5 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-goldbrand-400 text-slate-900 font-bold text-xs flex items-center justify-center">២</span>
+              <h2 class="text-white font-semibold text-sm sm:text-base">
+                គណនាប្រាក់ទិញ ឬលក់មាសជាក់ស្តែង (តម្លឹង • ជី • ហ៊ុន + ថ្លៃឈ្នួល)
+              </h2>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <!-- Buy vs Sell Toggle -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+              <button type="button" id="btn-mode-buy" onclick="setTxMode('buy')" class="py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition bg-tealbrand-700 text-white shadow-2xs">
+                ទិញមាសពីហាង (WE SELL)
+              </button>
+              <button type="button" id="btn-mode-sell" onclick="setTxMode('sell')" class="py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900">
+                លក់មាសឱ្យហាង (WE BUY)
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              <div class="lg:col-span-7 space-y-3.5">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <label for="tx-shop-price" id="tx-price-label" class="text-xs font-bold text-slate-700">
+                      តម្លៃហាងលក់ចេញ (WE SELL - USD / តម្លឹង)
+                    </label>
+                    <button type="button" onclick="syncFromConverter()" class="text-xs font-semibold text-tealbrand-700 hover:underline">
+                      ↻ ទាញតម្លៃពីតារាងទី ១
+                    </button>
+                  </div>
+                  <div class="relative flex items-center">
+                    <span class="absolute left-3.5 text-slate-400 font-bold">$</span>
+                    <input type="number" id="tx-shop-price" value="4370" step="5" oninput="calculateTransaction()" class="w-full pl-8 pr-20 py-2.5 text-lg font-bold font-mono bg-slate-50 border border-slate-300 focus:border-tealbrand-600 focus:bg-white rounded-xl outline-none" />
+                    <span class="absolute right-3 text-xs text-slate-500">/ តម្លឹង</span>
+                  </div>
+                </div>
+
+                <!-- Khmer Weight Inputs: Tamlung, Chi, Hun -->
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">
+                    ទម្ងន់មាស (១ តម្លឹង = ១០ ជី = ១០០ ហ៊ុន)
+                  </label>
+                  <div class="grid grid-cols-3 gap-2.5">
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 focus-within:border-tealbrand-600">
+                      <label for="w-tael" class="block text-[11px] font-semibold text-slate-500">តម្លឹង (Tamlung)</label>
+                      <input type="number" id="w-tael" value="0" min="0" step="1" oninput="calculateTransaction()" class="w-full text-base font-bold font-mono text-slate-900 bg-transparent outline-none mt-0.5" />
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 focus-within:border-tealbrand-600">
+                      <label for="w-chi" class="block text-[11px] font-semibold text-slate-500">ជី (Chi)</label>
+                      <input type="number" id="w-chi" value="2" min="0" step="1" oninput="calculateTransaction()" class="w-full text-base font-bold font-mono text-slate-900 bg-transparent outline-none mt-0.5" />
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 focus-within:border-tealbrand-600">
+                      <label for="w-hun" class="block text-[11px] font-semibold text-slate-500">ហ៊ុន (Hun)</label>
+                      <input type="number" id="w-hun" value="5" min="0" step="1" oninput="calculateTransaction()" class="w-full text-base font-bold font-mono text-slate-900 bg-transparent outline-none mt-0.5" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                  <div id="making-fee-box">
+                    <label for="making-fee" class="block text-[11px] font-bold text-slate-700 mb-1">ថ្លៃឈ្នួល ($ USD)</label>
+                    <input type="number" id="making-fee" value="0" min="0" step="1" oninput="calculateTransaction()" class="w-full px-3 py-2 text-sm font-bold font-mono bg-slate-50 border border-slate-300 rounded-xl outline-none focus:border-tealbrand-600" />
+                  </div>
+                  <div>
+                    <label for="khr-rate" class="block text-[11px] font-bold text-slate-700 mb-1">អត្រាប្តូរប្រាក់ (៛/$)</label>
+                    <input type="number" id="khr-rate" value="4050" min="1000" step="10" oninput="calculateTransaction()" class="w-full px-3 py-2 text-sm font-bold font-mono bg-slate-50 border border-slate-300 rounded-xl outline-none focus:border-tealbrand-600" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transaction Summary Receipt Card -->
+              <div class="lg:col-span-5 bg-slate-900 text-white rounded-2xl p-4 flex flex-col justify-between">
+                <div class="space-y-2 text-xs">
+                  <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <span class="font-bold text-slate-400 uppercase">សង្ខេបប្រតិបត្តិការ</span>
+                    <span id="receipt-badge" class="font-bold px-2 py-0.5 rounded bg-tealbrand-600/30 text-teal-300 border border-tealbrand-500/40">
+                      ទិញមាសពីហាង
+                    </span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">ទម្ងន់សរុប (ជី)៖</span>
+                    <span id="summary-chi" class="font-bold font-mono">2.50 ជី</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">ទម្ងន់សរុប (ក្រាម)៖</span>
+                    <span id="summary-grams" class="font-mono text-slate-300">9.38 g</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-400">តម្លៃមាស៖</span>
+                    <span id="summary-gold-subtotal" class="font-bold font-mono">$1,092.50</span>
+                  </div>
+                  <div id="summary-fee-row" class="flex justify-between">
+                    <span class="text-slate-400">ថ្លៃឈ្នួល៖</span>
+                    <span id="summary-fee" class="font-mono text-amber-300">+$0.00</span>
+                  </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800">
+                  <div class="flex items-baseline justify-between">
+                    <span id="total-label" class="text-xs font-semibold text-slate-300">សរុបត្រូវបង់៖</span>
+                    <span id="total-usd" class="text-2xl font-extrabold font-mono text-goldbrand-400">$1,092.50</span>
+                  </div>
+                  <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+                    <span>ប្រាក់រៀលប្រមាណ៖</span>
+                    <span id="total-khr" class="font-bold font-mono text-slate-200">4,424,625 ៛</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN (5 cols): Reverse Shop Premium Analyzer & XAU/USD Levels -->
+      <div class="xl:col-span-5 space-y-6">
+
+        <!-- Card 3: Reverse Shop Premium Analyzer -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-900 to-slate-800 px-5 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center">៣</span>
+              <h2 class="text-white font-semibold text-sm sm:text-base">
+                វិភាគគម្លាតជាក់ស្តែងរបស់ហាង (Reverse Analyzer)
+              </h2>
+            </div>
+          </div>
+
+          <div class="p-5 space-y-4">
+            <p class="text-xs text-slate-600 leading-relaxed">
+              វាយបញ្ចូលតម្លៃដែលហាង <strong>ហ៊ុយគាំង</strong> កំពុងផុសលើ Telegram ដើម្បីពិនិត្យមើលគម្លាតបន្ថែមធៀបនឹង <strong>XAU/USD</strong> ពេលនេះ៖
+            </p>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="actual-shop-buy" class="block text-[11px] font-bold text-amber-800 mb-1">
+                  តម្លៃហាងផុស WE BUY ($)
+                </label>
+                <input
+                  type="number"
+                  id="actual-shop-buy"
+                  value="4350"
+                  step="5"
+                  oninput="analyzeActualShopPrice()"
+                  class="w-full px-3 py-2 text-lg font-extrabold font-mono bg-amber-50/70 border border-amber-300 rounded-xl text-amber-700 outline-none focus:border-amber-500"
+                />
+              </div>
+              <div>
+                <label for="actual-shop-sell" class="block text-[11px] font-bold text-tealbrand-800 mb-1">
+                  តម្លៃហាងផុស WE SELL ($)
+                </label>
+                <input
+                  type="number"
+                  id="actual-shop-sell"
+                  value="4370"
+                  step="5"
+                  oninput="analyzeActualShopPrice()"
+                  class="w-full px-3 py-2 text-lg font-extrabold font-mono bg-tealbrand-50/70 border border-tealbrand-300 rounded-xl text-tealbrand-800 outline-none focus:border-tealbrand-600"
+                />
+              </div>
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200 space-y-2.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-600">គម្លាតបន្ថែមលើ WE BUY (Implied Premium)៖</span>
+                <span id="rev-buy-premium" class="font-extrabold font-mono text-base text-slate-900">+$26.54</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-600">គម្លាតសរុបលើ WE SELL (ធៀបតម្លៃដើម)៖</span>
+                <span id="rev-sell-premium" class="font-bold font-mono text-tealbrand-700">+$46.54 (+1.08%)</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-600">គម្លាតទិញ-លក់របស់ហាង (Shop Spread)៖</span>
+                <span id="rev-shop-spread" class="font-bold font-mono text-slate-800">$20.00 / តម្លឹង</span>
+              </div>
+
+              <div id="regime-box" class="mt-2 p-2.5 rounded-lg bg-tealbrand-50 border border-tealbrand-200 text-xs">
+                <div class="font-bold text-tealbrand-900" id="regime-title">
+                  ស្ថានភាព៖ តម្លៃហាងដើរស្របតាមទីផ្សារធម្មតា (Balanced)
+                </div>
+                <p class="text-[11px] text-tealbrand-800 mt-0.5" id="regime-desc">
+                  គម្លាតចន្លោះ +$18 ដល់ +$30 គឺជាកម្រិតស្តង់ដារធម្មតារបស់ហាង ហ៊ុយគាំង។
+                </p>
+              </div>
+
+              <button type="button" onclick="applyDetectedPremium()" class="w-full py-2 px-3 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition">
+                យកគម្លាតនេះ (+$<span id="btn-apply-prem-val">27</span>) ទៅប្រើក្នុងតារាងទី ១
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span class="text-[11px] text-slate-500 block">រាល់ XAU/USD ឡើង/ចុះ +$1/oz</span>
+                <span class="text-sm font-extrabold font-mono text-slate-800 mt-0.5 block">±$1.21 / តម្លឹង</span>
+                <span class="text-[10px] text-slate-400 font-mono">(±$0.12 / ជី)</span>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span class="text-[11px] text-slate-500 block">រាល់ XAU/USD ឡើង/ចុះ +$4.15/oz</span>
+                <span class="text-sm font-extrabold font-mono text-tealbrand-700 mt-0.5 block">±$5.00 / តម្លឹង</span>
+                <span class="text-[10px] text-slate-400 font-mono">(ហាងកែតម្លៃ ១ កាំ)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 4: XAU/USD Key Levels Matrix -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm">
+                តារាងកម្រិតតម្លៃ XAU/USD & តម្លៃហាងប៉ាន់ស្មាន
+              </h3>
+              <p class="text-[11px] text-slate-500">ចុចលើជួរណាមួយដើម្បីសាកល្បងតម្លៃ XAU/USD នោះភ្លាមៗ</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-[11px] uppercase border-b border-slate-200">
+                  <th class="py-2.5 px-3 font-bold">កម្រិតទីផ្សារ</th>
+                  <th class="py-2.5 px-3 font-bold">XAU/USD</th>
+                  <th class="py-2.5 px-3 font-bold text-amber-700">WE BUY</th>
+                  <th class="py-2.5 px-3 font-bold text-tealbrand-700">WE SELL</th>
+                </tr>
+              </thead>
+              <tbody id="levels-tbody" class="divide-y divide-slate-100 text-xs font-mono"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Bottom Section: SVG Trend Chart & Snapshot History Log -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm sm:text-base">
+            ក្រាហ្វនិន្នាការ & កំណត់ត្រា Snapshot ប្រវត្តិ (XAU/USD vs Shop Price)
+          </h3>
+          <p class="text-xs text-slate-500">
+            ប្រៀបធៀបតម្លៃដើម XAU/USD (១ តម្លឹង) ធៀបនឹងតម្លៃទិញ-លក់របស់ហាងតាមពេលវេលា
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="exportCSV()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition">
+            ↓ Export CSV
+          </button>
+          <button type="button" onclick="exportJSON()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition">
+            ↓ Export JSON
+          </button>
+          <button type="button" onclick="clearSnapshots()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition">
+            លុបទាំងអស់
+          </button>
+        </div>
+      </div>
+
+      <!-- SVG Trend Chart -->
+      <div class="p-5 bg-slate-50/70 border-b border-slate-200">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-4 text-xs font-semibold">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-1.5 rounded bg-slate-400 inline-block"></span> World Base (1 តម្លឹង)</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-1.5 rounded bg-amber-500 inline-block"></span> WE BUY</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-1.5 rounded bg-tealbrand-600 inline-block"></span> WE SELL</span>
+          </div>
+          <span id="chart-count-badge" class="text-[11px] font-mono text-slate-500">0 Snapshots</span>
+        </div>
+        <div class="w-full h-52 bg-white rounded-xl border border-slate-200 p-2 relative overflow-hidden">
+          <svg id="history-svg-chart" class="w-full h-full" viewBox="0 0 800 180" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+
+      <!-- Snapshot History Log Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50 text-slate-600 text-[11px] uppercase border-b border-slate-200">
+              <th class="py-3 px-4 font-bold">កាលបរិច្ឆេទ & ម៉ោង</th>
+              <th class="py-3 px-4 font-bold">XAU/USD</th>
+              <th class="py-3 px-4 font-bold">World Base</th>
+              <th class="py-3 px-4 font-bold">Shop Premium</th>
+              <th class="py-3 px-4 font-bold text-amber-700">WE BUY</th>
+              <th class="py-3 px-4 font-bold text-tealbrand-700">WE SELL</th>
+              <th class="py-3 px-4 font-bold text-right">សកម្មភាព</th>
+            </tr>
+          </thead>
+          <tbody id="snapshots-tbody" class="divide-y divide-slate-100 text-xs font-mono"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-8 py-4 px-4 text-center text-xs text-slate-500">
+    <p>XAU/USD Spot Gold & Cambodian Gold Shop Analyzer • ១ តម្លឹង = ៣៧.៥ ក្រាម (១ អោន = ៣១.១០៣៥ ក្រាម) • រក្សាទុកក្នុង Browser ស្វ័យប្រវត្តិ។</p>
+  </footer>
+
+  <!-- Main Application Script -->
+  <script>
+    // Conversion factor: 37.5 grams per Cambodian Tamlung / 31.1034768 grams per Troy Ounce
+    const OZ_TO_TAEL = 37.5 / 31.1034768;
+
+    const state = {
+      xauPrice: 3586.00,
+      premium: 25,
+      spread: 20,
+      roundStep: 5,
+      estBuyTael: 4350,
+      estSellTael: 4370,
+      txMode: 'buy',
+      manualPriceOverride: false,
+      liveSimInterval: null,
+      snapshots: []
+    };
+
+    const KEY_LEVELS = [
+      { label: 'Resistance R2', labelKm: 'កម្រិតទប់លើ R2', xau: 3643.24, type: 'res' },
+      { label: 'Intraday High', labelKm: 'កំពូលខ្ពស់បំផុតថ្ងៃនេះ', xau: 3607.12, type: 'high' },
+      { label: 'Current XAU/USD', labelKm: 'តម្លៃ XAU/USD បច្ចុប្បន្ន', xau: null, type: 'current' },
+      { label: 'Daily Pivot', labelKm: 'ចំណុចកណ្តាល Pivot', xau: 3580.75, type: 'pivot' },
+      { label: 'Intraday Low', labelKm: 'បាតទាបបំផុតថ្ងៃនេះ', xau: 3551.57, type: 'low' },
+      { label: 'Support S2', labelKm: 'កម្រិតទ្រក្រោម S2', xau: 3515.00, type: 'sup' }
+    ];
+
+    function formatUSD(val, decimals = 2) {
+      return '$' + Number(val).toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function formatNum(val, decimals = 0) {
+      return Number(val).toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    // MROUND equivalent helper
+    function mround(value, step) {
+      if (!step || step <= 0) return Math.round(value * 100) / 100;
+      return Math.round(value / step) * step;
+    }
+
+    // Populate Year, Month, Day, Hour, Minute dropdowns
+    function initDateTimeSelectors() {
+      const monthSel = document.getElementById('dt-month');
+      const daySel = document.getElementById('dt-day');
+      const hourSel = document.getElementById('dt-hour');
+      const minSel = document.getElementById('dt-minute');
+
+      const khMonths = [
+        '01 - មករា', '02 - កុម្ភៈ', '03 - មីនា', '04 - មេសា',
+        '05 - ឧសភា', '06 - មិថុនា', '07 - កក្កដា', '08 - សីហា',
+        '09 - កញ្ញា', '10 - តុលា', '11 - វិច្ឆិកា', '12 - ធ្នូ'
+      ];
+
+      monthSel.innerHTML = khMonths.map((m, idx) => `<option value="${idx + 1}">${m}</option>`).join('');
+      daySel.innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}">${pad2(i + 1)}</option>`).join('');
+      hourSel.innerHTML = Array.from({ length: 24 }, (_, i) => `<option value="${i}">${pad2(i)}</option>`).join('');
+      minSel.innerHTML = Array.from({ length: 60 }, (_, i) => `<option value="${i}">${pad2(i)}</option>`).join('');
+
+      setNowTimestamp(true);
+    }
+
+    // Set date/time inputs to current Phnom Penh time (UTC+7)
+    function setNowTimestamp(silent = false) {
+      const now = new Date();
+      const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const pnhDate = new Date(utcMs + (7 * 3600000));
+
+      const yearSel = document.getElementById('dt-year');
+      const y = pnhDate.getFullYear();
+      if (![...yearSel.options].some(o => Number(o.value) === y)) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSel.appendChild(opt);
+      }
+      yearSel.value = y;
+      document.getElementById('dt-month').value = pnhDate.getMonth() + 1;
+      document.getElementById('dt-day').value = pnhDate.getDate();
+      document.getElementById('dt-hour').value = pnhDate.getHours();
+      document.getElementById('dt-minute').value = pnhDate.getMinutes();
+
+      if (!silent) showToast('បានកំណត់ម៉ោងបច្ចុប្បន្ននៅភ្នំពេញ (UTC+7)!');
+    }
+
+    function getSelectedTimestampString() {
+      const y = document.getElementById('dt-year').value;
+      const m = pad2(document.getElementById('dt-month').value);
+      const d = pad2(document.getElementById('dt-day').value);
+      const h = pad2(document.getElementById('dt-hour').value);
+      const min = pad2(document.getElementById('dt-minute').value);
+      return `${y}-${m}-${d} ${h}:${min}`;
+    }
+
+    function onTimestampChange() {
+      if (LC.g === 'live') lcSetView('day'); else lcRefresh();
+    }
+
+    // Dual Clock (Phnom Penh UTC+7 + New York EST UTC-5)
+    function startLiveClocks() {
+      function updateClocks() {
+        const now = new Date();
+        const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const pnh = new Date(utcMs + (7 * 3600000));
+        const ny = new Date(utcMs - (5 * 3600000));
+
+        document.getElementById('clock-pnh').textContent = `${pad2(pnh.getHours())}:${pad2(pnh.getMinutes())}:${pad2(pnh.getSeconds())}`;
+        document.getElementById('clock-ny').textContent = `${pad2(ny.getHours())}:${pad2(ny.getMinutes())}`;
+
+        const day = pnh.getDay();
+        const hr = pnh.getHours();
+        const sessionEl = document.getElementById('market-session-badge');
+        if (day === 0 || (day === 6 && hr >= 4)) {
+          sessionEl.textContent = 'ទីផ្សារបិទចុងសប្តាហ៍ (Closed)';
+          sessionEl.className = 'text-rose-300 font-sans font-semibold';
+        } else if (hr >= 19 && hr <= 23) {
+          sessionEl.textContent = 'London/NY Overlap (រត់ខ្លាំង)';
+          sessionEl.className = 'text-emerald-300 font-sans font-semibold';
+        } else if (hr >= 14 && hr < 19) {
+          sessionEl.textContent = 'London Session (អឺរ៉ុប)';
+          sessionEl.className = 'text-goldbrand-300 font-sans font-semibold';
+        } else {
+          sessionEl.textContent = 'Asian Session (អាស៊ី)';
+          sessionEl.className = 'text-teal-200 font-sans font-semibold';
+        }
+      }
+      updateClocks();
+      setInterval(updateClocks, 1000);
+    }
+
+    // Optional XAU/USD Live Simulation
+    function toggleLiveSimulation() {
+      const btn = document.getElementById('btn-live-sim');
+      const dot = document.getElementById('sim-dot');
+      const label = document.getElementById('sim-label');
+
+      if (state.liveSimInterval) {
+        clearInterval(state.liveSimInterval);
+        state.liveSimInterval = null;
+        btn.className = 'px-3.5 py-2.5 rounded-xl text-xs font-bold border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 transition flex items-center gap-2';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+        label.textContent = 'បើកតម្លៃ XAU/USD រត់ Live';
+        showToast('បានផ្អាកតម្លៃ XAU/USD រត់ Live');
+      } else {
+        btn.className = 'px-3.5 py-2.5 rounded-xl text-xs font-bold border border-emerald-500 bg-emerald-50 text-emerald-800 transition flex items-center gap-2';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
+        label.textContent = 'កំពុងរត់ Live (ចុចដើម្បីផ្អាក)';
+        showToast('កំពុងក្លែងធ្វើតម្លៃ XAU/USD រត់ Live...');
+
+        state.liveSimInterval = setInterval(() => {
+          const input = document.getElementById('xau-price');
+          const cur = parseFloat(input.value) || 3586.00;
+          const delta = (Math.random() - 0.5) * 1.8;
+          input.value = Math.max(1000, cur + delta).toFixed(2);
+          setNowTimestamp(true);
+          handleXauChange();
+        }, 1000);
+      }
+    }
+
+    function computeShopPrices(xauOz) {
+      const rawTael = xauOz * OZ_TO_TAEL;
+      const rawChi = rawTael / 10;
+      const rawGram = xauOz / 31.1034768;
+      const buyTael = mround(rawTael + state.premium, state.roundStep);
+      const sellTael = buyTael + state.spread;
+
+      return {
+        rawTael,
+        rawChi,
+        rawGram,
+        buyTael,
+        sellTael,
+        buyChi: buyTael / 10,
+        sellChi: sellTael / 10,
+        buyGram: buyTael / 37.5,
+        sellGram: sellTael / 37.5
+      };
+    }
+
+    function handleXauChange() {
+      const xauVal = parseFloat(document.getElementById('xau-price').value);
+      const premVal = parseFloat(document.getElementById('shop-premium').value);
+      const spreadVal = parseFloat(document.getElementById('shop-spread').value);
+      const stepVal = parseFloat(document.getElementById('round-step').value);
+
+      state.xauPrice = isNaN(xauVal) ? 0 : xauVal;
+      state.premium = isNaN(premVal) ? 0 : premVal;
+      state.spread = isNaN(spreadVal) ? 0 : spreadVal;
+      state.roundStep = isNaN(stepVal) ? 5 : stepVal;
+
+      const res = computeShopPrices(state.xauPrice);
+      state.estBuyTael = res.buyTael;
+      state.estSellTael = res.sellTael;
+
+      const decimals = state.roundStep === 0 ? 2 : 0;
+
+      document.getElementById('raw-tael-price').textContent = formatUSD(res.rawTael, 2);
+      document.getElementById('raw-chi-price').textContent = formatUSD(res.rawChi, 2);
+      document.getElementById('raw-gram-price').textContent = formatUSD(res.rawGram, 2);
+
+      document.getElementById('est-buy-tael').textContent = formatNum(res.buyTael, decimals);
+      document.getElementById('est-buy-chi').textContent = formatUSD(res.buyChi, 2);
+      document.getElementById('est-buy-gram').textContent = formatUSD(res.buyGram, 2);
+
+      document.getElementById('est-sell-tael').textContent = formatNum(res.sellTael, decimals);
+      document.getElementById('est-sell-chi').textContent = formatUSD(res.sellChi, 2);
+      document.getElementById('est-sell-gram').textContent = formatUSD(res.sellGram, 2);
+
+      if (!state.manualPriceOverride) {
+        document.getElementById('tx-shop-price').value = state.txMode === 'buy' ? state.estSellTael : state.estBuyTael;
+      }
+
+      calculateTransaction();
+      analyzeActualShopPrice();
+      renderLevelsTable();
+      lcTick(state.xauPrice);
+    }
+
+    function adjustXau(delta) {
+      const input = document.getElementById('xau-price');
+      const cur = parseFloat(input.value) || 0;
+      input.value = Math.max(0, cur + delta).toFixed(2);
+      state.manualPriceOverride = false;
+      handleXauChange();
+    }
+
+    function applyMarketPreset(premVal, key) {
+      document.getElementById('shop-premium').value = premVal;
+      const styles = {
+        surge: 'p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100/80 text-left transition',
+        normal: 'p-2.5 rounded-xl border border-tealbrand-200 bg-tealbrand-50/50 hover:bg-tealbrand-100/70 text-left transition',
+        drop: 'p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100/80 text-left transition'
+      };
+      const activeStyles = {
+        surge: 'p-2.5 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-left transition shadow-2xs',
+        normal: 'p-2.5 rounded-xl border-2 border-tealbrand-600 bg-tealbrand-50 text-left transition shadow-2xs',
+        drop: 'p-2.5 rounded-xl border-2 border-rose-600 bg-rose-50 text-left transition shadow-2xs'
+      };
+
+      document.getElementById('preset-surge').className = key === 'surge' ? activeStyles.surge : styles.surge;
+      document.getElementById('preset-normal').className = key === 'normal' ? activeStyles.normal : styles.normal;
+      document.getElementById('preset-drop').className = key === 'drop' ? activeStyles.drop : styles.drop;
+
+      state.manualPriceOverride = false;
+      handleXauChange();
+    }
+
+    function toggleSettings() {
+      document.getElementById('formula-settings').classList.toggle('hidden');
+    }
+
+    // Reverse Shop Premium Analyzer
+    function analyzeActualShopPrice() {
+      const actualBuy = parseFloat(document.getElementById('actual-shop-buy').value) || 0;
+      const actualSell = parseFloat(document.getElementById('actual-shop-sell').value) || 0;
+      const rawTael = state.xauPrice * OZ_TO_TAEL;
+
+      const impliedBuyPrem = actualBuy - rawTael;
+      const impliedSellPrem = actualSell - rawTael;
+      const sellPct = rawTael > 0 ? (impliedSellPrem / rawTael) * 100 : 0;
+      const actualSpread = actualSell - actualBuy;
+
+      const signBuy = impliedBuyPrem >= 0 ? '+' : '-';
+      const signSell = impliedSellPrem >= 0 ? '+' : '-';
+
+      document.getElementById('rev-buy-premium').textContent = `${signBuy}${formatUSD(Math.abs(impliedBuyPrem), 2)}`;
+      document.getElementById('rev-sell-premium').textContent = `${signSell}${formatUSD(Math.abs(impliedSellPrem), 2)} (${signSell}${Math.abs(sellPct).toFixed(2)}%)`;
+      document.getElementById('rev-shop-spread').textContent = `${formatUSD(actualSpread, 2)} / តម្លឹង`;
+      document.getElementById('btn-apply-prem-val').textContent = Math.round(impliedBuyPrem);
+
+      const box = document.getElementById('regime-box');
+      const title = document.getElementById('regime-title');
+      const desc = document.getElementById('regime-desc');
+
+      if (impliedBuyPrem > 30) {
+        box.className = 'mt-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs';
+        title.className = 'font-bold text-rose-800';
+        desc.className = 'text-[11px] text-rose-700 mt-0.5';
+        title.textContent = 'ស្ថានភាព៖ ហាងកំពុងទប់តម្លៃ (Defensive High Premium)';
+        desc.textContent = 'គម្លាតលើស +$30 បង្ហាញថា XAU/USD ទើបធ្លាក់ចុះលឿន ហើយហាងពន្យារការបញ្ចុះតម្លៃ។';
+      } else if (impliedBuyPrem < 18) {
+        box.className = 'mt-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-xs';
+        title.className = 'font-bold text-emerald-800';
+        desc.className = 'text-[11px] text-emerald-700 mt-0.5';
+        title.textContent = 'ស្ថានភាព៖ ទីផ្សារស្ទុះឡើងលឿន (Lagging Surge)';
+        desc.textContent = 'គម្លាតក្រោម +$18 បង្ហាញថា XAU/USD ទើបស្ទុះឡើងខ្លាំង ហើយហាងមិនទាន់ដំឡើងតម្លៃតាមទាន់។';
+      } else {
+        box.className = 'mt-2 p-2.5 rounded-lg bg-tealbrand-50 border border-tealbrand-200 text-xs';
+        title.className = 'font-bold text-tealbrand-900';
+        desc.className = 'text-[11px] text-tealbrand-800 mt-0.5';
+        title.textContent = 'ស្ថានភាព៖ តម្លៃហាងដើរស្របតាមទីផ្សារធម្មតា (Balanced)';
+        desc.textContent = 'គម្លាតចន្លោះ +$18 ដល់ +$30 គឺជាកម្រិតស្តង់ដារធម្មតារបស់ហាង ហ៊ុយគាំង។';
+      }
+    }
+
+    function applyDetectedPremium() {
+      const actualBuy = parseFloat(document.getElementById('actual-shop-buy').value) || 0;
+      const rawTael = state.xauPrice * OZ_TO_TAEL;
+      const detected = Math.round(actualBuy - rawTael);
+      document.getElementById('shop-premium').value = detected;
+      state.manualPriceOverride = false;
+      handleXauChange();
+      showToast(`បានយកគម្លាត +$${detected} ទៅប្រើក្នុងតារាងទី ១!`);
+    }
+
+    // Physical Transaction Calculator (Tamlung, Chi, Hun + Making Fee)
+    function setTxMode(mode) {
+      state.txMode = mode;
+      state.manualPriceOverride = false;
+
+      const btnBuy = document.getElementById('btn-mode-buy');
+      const btnSell = document.getElementById('btn-mode-sell');
+      const label = document.getElementById('tx-price-label');
+      const feeBox = document.getElementById('making-fee-box');
+      const feeRow = document.getElementById('summary-fee-row');
+      const badge = document.getElementById('receipt-badge');
+      const totalLabel = document.getElementById('total-label');
+
+      if (mode === 'buy') {
+        btnBuy.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition bg-tealbrand-700 text-white shadow-2xs';
+        btnSell.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900';
+        label.textContent = 'តម្លៃហាងលក់ចេញ (WE SELL - USD / តម្លឹង)';
+        feeBox.classList.remove('opacity-40', 'pointer-events-none');
+        feeRow.classList.remove('hidden');
+        badge.textContent = 'ទិញមាសពីហាង';
+        badge.className = 'font-bold px-2 py-0.5 rounded bg-tealbrand-600/30 text-teal-300 border border-tealbrand-500/40';
+        totalLabel.textContent = 'សរុបត្រូវបង់៖';
+        document.getElementById('tx-shop-price').value = state.estSellTael;
+      } else {
+        btnSell.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition bg-amber-500 text-slate-950 shadow-2xs';
+        btnBuy.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900';
+        label.textContent = 'តម្លៃហាងទិញចូល (WE BUY - USD / តម្លឹង)';
+        feeBox.classList.add('opacity-40', 'pointer-events-none');
+        feeRow.classList.add('hidden');
+        badge.textContent = 'លក់មាសឱ្យហាង';
+        badge.className = 'font-bold px-2 py-0.5 rounded bg-amber-500/25 text-amber-300 border border-amber-400/40';
+        totalLabel.textContent = 'សរុបទទួលបាន៖';
+        document.getElementById('tx-shop-price').value = state.estBuyTael;
+      }
+      calculateTransaction();
+    }
+
+    function syncFromConverter() {
+      state.manualPriceOverride = false;
+      document.getElementById('tx-shop-price').value = state.txMode === 'buy' ? state.estSellTael : state.estBuyTael;
+      calculateTransaction();
+      showToast('បានទាញតម្លៃថ្មីពីតារាងទី ១!');
+    }
+
+    function calculateTransaction() {
+      const shopPrice = parseFloat(document.getElementById('tx-shop-price').value) || 0;
+      const tael = parseFloat(document.getElementById('w-tael').value) || 0;
+      const chi = parseFloat(document.getElementById('w-chi').value) || 0;
+      const hun = parseFloat(document.getElementById('w-hun').value) || 0;
+      const fee = state.txMode === 'buy' ? (parseFloat(document.getElementById('making-fee').value) || 0) : 0;
+      const khrRate = parseFloat(document.getElementById('khr-rate').value) || 4050;
+
+      // 1 Tamlung = 10 Chi, 1 Hun = 0.1 Chi
+      const totalChi = (tael * 10) + chi + (hun / 10);
+      const totalGrams = totalChi * 3.75;
+      const goldSubtotal = totalChi * (shopPrice / 10);
+      const totalUSD = goldSubtotal + fee;
+      const totalKHR = Math.round(totalUSD * khrRate);
+
+      document.getElementById('summary-chi').textContent = formatNum(totalChi, 2) + ' ជី';
+      document.getElementById('summary-grams').textContent = formatNum(totalGrams, 2) + ' g';
+      document.getElementById('summary-gold-subtotal').textContent = formatUSD(goldSubtotal, 2);
+      document.getElementById('summary-fee').textContent = '+' + formatUSD(fee, 2);
+      document.getElementById('total-usd').textContent = formatUSD(totalUSD, 2);
+      document.getElementById('total-khr').textContent = formatNum(totalKHR, 0) + ' ៛';
+    }
+
+    function renderLevelsTable() {
+      const tbody = document.getElementById('levels-tbody');
+      const decimals = state.roundStep === 0 ? 2 : 0;
+
+      tbody.innerHTML = KEY_LEVELS.map(lvl => {
+        const isCurrent = lvl.type === 'current';
+        const xau = isCurrent ? state.xauPrice : lvl.xau;
+        const res = computeShopPrices(xau);
+
+        return `
+          <tr onclick="jumpToXau(${xau})" class="cursor-pointer ${isCurrent ? 'bg-tealbrand-50 font-bold' : 'hover:bg-slate-50'} transition">
+            <td class="py-2.5 px-3 font-sans">
+              <span class="font-bold text-slate-800 block">${lvl.labelKm}</span>
+              <span class="text-[10px] text-slate-400 font-mono">${lvl.label}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-800">${formatUSD(xau, 2)}</td>
+            <td class="py-2.5 px-3 text-amber-600 font-bold">${formatNum(res.buyTael, decimals)}</td>
+            <td class="py-2.5 px-3 text-tealbrand-700 font-bold">${formatNum(res.sellTael, decimals)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function jumpToXau(xauVal) {
+      document.getElementById('xau-price').value = Number(xauVal).toFixed(2);
+      state.manualPriceOverride = false;
+      handleXauChange();
+      showToast(`បានកំណត់ XAU/USD ទៅ ${formatUSD(xauVal, 2)}`);
+    }
+
+    // Snapshot Log, SVG Chart & Export
+    function loadSnapshots() {
+      try {
+        const raw = localStorage.getItem('xau_spot_huykeang_snapshots_v1');
+        if (raw) state.snapshots = JSON.parse(raw);
+      } catch (e) {
+        state.snapshots = [];
+      }
+
+      if (state.snapshots.length === 0) {
+        state.snapshots = [
+          { id: 1, timestamp: '2026-11-26 09:41', xau: 3592.50, worldBase: 4331.31, premium: 38, buyTael: 4370, sellTael: 4390 },
+          { id: 2, timestamp: '2026-11-26 10:23', xau: 3578.20, worldBase: 4314.07, premium: 36, buyTael: 4350, sellTael: 4370 },
+          { id: 3, timestamp: '2026-11-26 11:12', xau: 3586.00, worldBase: 4323.46, premium: 25, buyTael: 4350, sellTael: 4370 }
+        ];
+        persistSnapshots();
+      }
+      renderSnapshotsAndChart();
+    }
+
+    function persistSnapshots() {
+      try {
+        localStorage.setItem('xau_spot_huykeang_snapshots_v1', JSON.stringify(state.snapshots));
+      } catch (e) {}
+    }
+
+    function saveSnapshot() {
+      const ts = getSelectedTimestampString();
+      const rawTael = state.xauPrice * OZ_TO_TAEL;
+      const entry = {
+        id: Date.now(),
+        timestamp: ts,
+        xau: Number(state.xauPrice.toFixed(2)),
+        worldBase: Number(rawTael.toFixed(2)),
+        premium: state.premium,
+        buyTael: state.estBuyTael,
+        sellTael: state.estSellTael
+      };
+
+      state.snapshots.push(entry);
+      state.snapshots.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+      persistSnapshots();
+      renderSnapshotsAndChart();
+      showToast(`បានរក្សាទុក Snapshot (${ts})!`);
+    }
+
+    function deleteSnapshot(id) {
+      state.snapshots = state.snapshots.filter(s => s.id !== id);
+      persistSnapshots();
+      renderSnapshotsAndChart();
+    }
+
+    function clearSnapshots() {
+      state.snapshots = [];
+      persistSnapshots();
+      renderSnapshotsAndChart();
+      showToast('បានលុបទិន្នន័យ Snapshot ទាំងអស់!');
+    }
+
+    function renderSnapshotsAndChart() {
+      const tbody = document.getElementById('snapshots-tbody');
+      const countBadge = document.getElementById('chart-count-badge');
+      countBadge.textContent = `${state.snapshots.length} Snapshots`;
+
+      if (state.snapshots.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-6 px-4 text-center text-slate-400 font-sans">
+              មិនទាន់មានទិន្នន័យ Snapshot ទេ។ សូមចុច «+ រក្សាទុក Snapshot» ខាងលើដើម្បីកត់ត្រា។
+            </td>
+          </tr>
+        `;
+      } else {
+        const reversed = [...state.snapshots].reverse();
+        tbody.innerHTML = reversed.map(s => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-2.5 px-4 font-bold text-slate-800">${s.timestamp}</td>
+            <td class="py-2.5 px-4 text-tealbrand-800 font-bold">${formatUSD(s.xau, 2)}</td>
+            <td class="py-2.5 px-4 text-slate-500">${formatUSD(s.worldBase, 2)}</td>
+            <td class="py-2.5 px-4 text-slate-700">+$${s.premium}</td>
+            <td class="py-2.5 px-4 font-bold text-amber-600">${formatNum(s.buyTael, 0)}</td>
+            <td class="py-2.5 px-4 font-bold text-tealbrand-700">${formatNum(s.sellTael, 0)}</td>
+            <td class="py-2.5 px-4 text-right">
+              <button type="button" onclick="deleteSnapshot(${s.id})" class="text-rose-500 hover:text-rose-700 font-sans text-xs font-semibold">
+                លុប
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      renderSVGChart();
+    }
+
+    function renderSVGChart() {
+      const svg = document.getElementById('history-svg-chart');
+      const data = state.snapshots;
+
+      if (data.length === 0) {
+        svg.innerHTML = `<text x="400" y="95" text-anchor="middle" fill="#94a3b8" font-size="13" font-family="Kantumruy Pro, sans-serif">មិនមានទិន្នន័យសម្រាប់គូសក្រាហ្វនៅឡើយទេ</text>`;
+        return;
+      }
+
+      const W = 800, H = 180;
+      const padL = 55, padR = 25, padT = 20, padB = 28;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+
+      const allVals = data.flatMap(d => [d.worldBase, d.buyTael, d.sellTael]);
+      const minVal = Math.min(...allVals) - 10;
+      const maxVal = Math.max(...allVals) + 10;
+      const range = Math.max(1, maxVal - minVal);
+
+      const getX = (idx) => data.length === 1 ? padL + plotW / 2 : padL + (idx / (data.length - 1)) * plotW;
+      const getY = (val) => padT + plotH - ((val - minVal) / range) * plotH;
+
+      let gridHtml = '';
+      for (let i = 0; i <= 3; i++) {
+        const y = padT + (i / 3) * plotH;
+        const val = maxVal - (i / 3) * range;
+        gridHtml += `
+          <line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="3,3" />
+          <text x="${padL - 6}" y="${y + 4}" text-anchor="end" fill="#64748b" font-size="10" font-family="JetBrains Mono, monospace">${Math.round(val)}</text>
+        `;
+      }
+
+      const buildPath = (key) => data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(d[key]).toFixed(1)}`).join(' ');
+
+      const baseLine = data.length > 1 ? `<path d="${buildPath('worldBase')}" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3" />` : '';
+      const buyLine = data.length > 1 ? `<path d="${buildPath('buyTael')}" fill="none" stroke="#f59e0b" stroke-width="2.5" />` : '';
+      const sellLine = data.length > 1 ? `<path d="${buildPath('sellTael')}" fill="none" stroke="#0d9488" stroke-width="2.5" />` : '';
+
+      const dotsHtml = data.map((d, i) => {
+        const x = getX(i);
+        const shortTime = d.timestamp.slice(-5);
+        return `
+          <circle cx="${x}" cy="${getY(d.worldBase)}" r="3.5" fill="#94a3b8" />
+          <circle cx="${x}" cy="${getY(d.buyTael)}" r="4" fill="#f59e0b" />
+          <circle cx="${x}" cy="${getY(d.sellTael)}" r="4" fill="#0d9488" />
+          <text x="${x}" y="${H - 8}" text-anchor="middle" fill="#64748b" font-size="10" font-family="JetBrains Mono, monospace">${shortTime}</text>
+        `;
+      }).join('');
+
+      svg.innerHTML = gridHtml + baseLine + buyLine + sellLine + dotsHtml;
+    }
+
+    function exportCSV() {
+      if (state.snapshots.length === 0) {
+        showToast('មិនមានទិន្នន័យសម្រាប់ Export ទេ!');
+        return;
+      }
+      const headers = ['Timestamp', 'XAU_USD', 'World_Base_Tamlung', 'Shop_Premium', 'WE_BUY_Tamlung', 'WE_SELL_Tamlung'];
+      const rows = state.snapshots.map(s => [
+        s.timestamp, s.xau, s.worldBase, s.premium, s.buyTael, s.sellTael
+      ].join(','));
+      const csvContent = [headers.join(','), ...rows].join('\n');
+      triggerDownload(csvContent, 'xau_usd_huykeang_analysis.csv', 'text/csv;charset=utf-8;');
+      showToast('បានទាញយកឯកសារ CSV រួចរាល់!');
+    }
+
+    function exportJSON() {
+      if (state.snapshots.length === 0) {
+        showToast('មិនមានទិន្នន័យសម្រាប់ Export ទេ!');
+        return;
+      }
+      const jsonContent = JSON.stringify(state.snapshots, null, 2);
+      triggerDownload(jsonContent, 'xau_usd_huykeang_analysis.json', 'application/json');
+      showToast('បានទាញយកឯកសារ JSON រួចរាល់!');
+    }
+
+    function triggerDownload(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function copyValue(elementId, label) {
+      const text = document.getElementById(elementId).textContent.replace(/,/g, '');
+      const temp = document.createElement('input');
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand('copy');
+        showToast(`បានចម្លង ${label}: ${text}`);
+      } catch (e) {
+        showToast('មិនអាចចម្លងបានទេ');
+      }
+      document.body.removeChild(temp);
+    }
+
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 2600);
+    }
+
+    function resetDefaults() {
+      if (state.liveSimInterval) toggleLiveSimulation();
+      document.getElementById('xau-price').value = '3586.00';
+      applyMarketPreset(25, 'normal');
+      document.getElementById('shop-spread').value = '20';
+      document.getElementById('round-step').value = '5';
+      document.getElementById('w-tael').value = '0';
+      document.getElementById('w-chi').value = '2';
+      document.getElementById('w-hun').value = '5';
+      document.getElementById('making-fee').value = '0';
+      document.getElementById('khr-rate').value = '4050';
+      setNowTimestamp(true);
+      setTxMode('buy');
+      handleXauChange();
+      showToast('បានកំណត់ប្រព័ន្ធឡើងវិញ!');
+    }
+
+    document.getElementById('tx-shop-price').addEventListener('input', () => {
+      state.manualPriceOverride = true;
+    });
+
+    // ===== Live Candle / Mountain Chart (canvas) =====
+    const LC = { mode: 'candle', tf: 15, candles: [], g: 'live', hist: [], z: 1, off: 0, drag: null, hover: null, w: 0, h: 0, view: null, raf: 0, pad: { l: 8, r: 66, t: 12, b: 22 } };
+    const lcCv = () => document.getElementById('lc-canvas');
+
+    function lcFmt(ms, full) {
+      const d = new Date(ms + 7 * 3600000);
+      const t = `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}` + (LC.tf < 60 || full ? `:${pad2(d.getUTCSeconds())}` : '');
+      return full ? `${pad2(d.getUTCDate())}/${pad2(d.getUTCMonth() + 1)} ${t}` : t;
+    }
+
+    function lcSeed() {
+      const tf = LC.tf * 1000, end = Math.floor(Date.now() / tf) * tf, vol = 0.14 * Math.sqrt(LC.tf);
+      let p = state.xauPrice || 3586; const arr = [];
+      for (let i = 0; i < 180; i++) {
+        const c = p, o = p - (Math.random() - 0.5) * 2 * vol;
+        arr.unshift({ t: end - i * tf, o, c, h: Math.max(o, c) + Math.random() * vol * 0.6, l: Math.min(o, c) - Math.random() * vol * 0.6 });
+        p = o;
+      }
+      LC.candles = arr;
+    }
+
+    function lcTick(price) {
+      if (!LC.candles.length || !(price > 0)) return;
+      const last = LC.candles[LC.candles.length - 1];
+      if (price < last.c * 0.7 || price > last.c * 1.4) return; // ignore half-typed values
+      const tf = LC.tf * 1000, b = Math.floor(Date.now() / tf) * tf;
+      if (b > last.t) {
+        LC.candles.push({ t: b, o: last.c, h: Math.max(last.c, price), l: Math.min(last.c, price), c: price });
+        if (LC.candles.length > 600) LC.candles.shift();
+      } else {
+        last.c = price; last.h = Math.max(last.h, price); last.l = Math.min(last.l, price);
+      }
+      lcReq();
+    }
+
+    function lcReq() { if (!LC.raf) LC.raf = requestAnimationFrame(lcDraw); }
+
+    function lcTag(ctx, txt, x, y, bg, fg) {
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x, y - 8, LC.pad.r - 4, 16, 4); ctx.fill();
+      ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.fillText(txt, x + 5, y + 0.5);
+    }
+
+    function lcDraw() {
+      LC.raf = 0;
+      const cv = lcCv(), { w, h, pad } = LC;
+      const src = lcSrc();
+      if (!cv || !w) return;
+      const ctx = cv.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+      if (!src.length) {
+        document.getElementById('lc-tip').style.opacity = 0; document.getElementById('lc-dot').style.display = 'none';
+        ctx.fillStyle = '#94a3b8'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('មិនទាន់មានទិន្នន័យសម្រាប់ពេលនេះ', w / 2, h / 2); return;
+      }
+      const pw = w - pad.l - pad.r, ph = h - pad.t - pad.b;
+      const bn = Math.max(20, Math.floor(pw / 9));
+      const n = Math.min(src.length, Math.max(5, Math.round(bn / LC.z)));
+      LC.off = Math.max(0, Math.min(LC.off, src.length - n));
+      const end = src.length - LC.off;
+      const vis = src.slice(end - n, end), area = LC.mode === 'area';
+      let lo = Infinity, hi = -Infinity;
+      vis.forEach(c => { lo = Math.min(lo, area ? c.c : c.l); hi = Math.max(hi, area ? c.c : c.h); });
+      const pv = (hi - lo) * 0.14 || 1; lo -= pv; hi += pv;
+      const st = pw / n, X = i => pad.l + st * (i + 0.5), Y = p => pad.t + (hi - p) / (hi - lo) * ph;
+      LC.view = { vis, n, lo, hi, st, X, Y };
+
+      ctx.font = '10px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,255,255,.06)'; ctx.fillStyle = 'rgba(203,213,225,.65)';
+      const raw = (hi - lo) / 5, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const sp = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || 10 * mag;
+      ctx.textAlign = 'left';
+      for (let p = Math.ceil(lo / sp) * sp; p < hi; p += sp) {
+        const y = Math.round(Y(p)) + 0.5;
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+        ctx.fillText(formatNum(p, sp < 1 ? 2 : (sp % 1 ? 1 : 0)), w - pad.r + 6, y);
+      }
+      const k = Math.max(1, Math.ceil(80 / st)); ctx.textAlign = 'center';
+      for (let i = n - 1; i >= 0; i -= k) {
+        const x = Math.round(X(i)) + 0.5;
+        ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t + ph); ctx.stroke();
+        ctx.fillText(vis[i].lb || lcFmt(vis[i].t), X(i), h - pad.b / 2 + 2);
+      }
+
+      vis.forEach((c, i) => { if (c.sel) { ctx.fillStyle = 'rgba(250,204,21,.13)'; ctx.fillRect(X(i) - st / 2, pad.t, st, ph); } });
+      const last = vis[n - 1], up = last.c >= last.o;
+      if (area) {
+        const g = ctx.createLinearGradient(0, pad.t, 0, pad.t + ph);
+        g.addColorStop(0, 'rgba(45,212,191,.40)'); g.addColorStop(1, 'rgba(45,212,191,0)');
+        ctx.beginPath();
+        vis.forEach((c, i) => i ? ctx.lineTo(X(i), Y(c.c)) : ctx.moveTo(X(i), Y(c.c)));
+        ctx.strokeStyle = '#2dd4bf'; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+        ctx.lineTo(X(n - 1), pad.t + ph); ctx.lineTo(X(0), pad.t + ph); ctx.closePath();
+        ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 1;
+      } else {
+        const bw = Math.max(2, Math.min(14, st * 0.66));
+        vis.forEach((c, i) => {
+          const col = c.c >= c.o ? '#34d399' : '#fb7185', x = X(i), xl = Math.round(x) + 0.5;
+          ctx.strokeStyle = col; ctx.fillStyle = col;
+          ctx.beginPath(); ctx.moveTo(xl, Y(c.h)); ctx.lineTo(xl, Y(c.l)); ctx.stroke();
+          const yo = Y(c.o), yc = Y(c.c);
+          ctx.fillRect(x - bw / 2, Math.min(yo, yc), bw, Math.max(1.5, Math.abs(yo - yc)));
+        });
+      }
+
+      const ly = Y(last.c), lcol = up ? '#34d399' : '#fb7185';
+      ctx.setLineDash([4, 3]); ctx.strokeStyle = lcol; ctx.globalAlpha = 0.7;
+      ctx.beginPath(); ctx.moveTo(pad.l, ly); ctx.lineTo(w - pad.r, ly); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      lcTag(ctx, formatNum(last.c, 2), w - pad.r + 2, ly, lcol, '#04201c');
+      const dot = document.getElementById('lc-dot');
+      dot.style.transform = `translate(${X(n - 1)}px,${ly}px)`; dot.style.display = '';
+
+      // Hover: crosshair + glass tooltip
+      const tip = document.getElementById('lc-tip'), hv = LC.hover;
+      if (hv && hv.x >= pad.l && hv.x <= w - pad.r && hv.y >= pad.t && hv.y <= pad.t + ph) {
+        const i = Math.min(n - 1, Math.max(0, Math.floor((hv.x - pad.l) / st))), c = vis[i], cx = X(i);
+        ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(cx - st / 2, pad.t, st, ph);
+        ctx.setLineDash([3, 3]); ctx.strokeStyle = 'rgba(255,255,255,.45)';
+        ctx.beginPath();
+        ctx.moveTo(Math.round(cx) + 0.5, pad.t); ctx.lineTo(Math.round(cx) + 0.5, pad.t + ph);
+        ctx.moveTo(pad.l, Math.round(hv.y) + 0.5); ctx.lineTo(w - pad.r, Math.round(hv.y) + 0.5);
+        ctx.stroke(); ctx.setLineDash([]);
+        if (area) {
+          ctx.fillStyle = '#fff'; ctx.strokeStyle = '#14b8a6'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(cx, Y(c.c), 4, 0, 7); ctx.fill(); ctx.stroke(); ctx.lineWidth = 1;
+        }
+        lcTag(ctx, formatNum(hi - (hv.y - pad.t) / ph * (hi - lo), 2), w - pad.r + 2, hv.y, 'rgba(226,232,240,.92)', '#0f172a');
+        const lx = Math.min(w - pad.r - 30, Math.max(pad.l + 30, cx));
+        ctx.fillStyle = 'rgba(226,232,240,.92)'; ctx.beginPath(); ctx.roundRect(lx - 30, h - pad.b + 3, 60, 16, 4); ctx.fill();
+        ctx.fillStyle = '#0f172a'; ctx.textAlign = 'center'; ctx.fillText(c.lb || lcFmt(c.t), lx, h - pad.b + 11.5);
+
+        const sh = computeShopPrices(c.c), u = c.c >= c.o, kc = u ? 'text-emerald-300' : 'text-rose-300', pc = (c.c - c.o) / c.o * 100;
+        const row = (l, v, cl = '') => `<span class="text-white/65">${l}</span><span class="text-right font-mono font-semibold ${cl}">${v}</span>`;
+        tip.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5"><span class="font-mono text-[10px] text-white/75">${c.fl || lcFmt(c.t, 1)}</span><span class="font-mono text-[10px] font-bold ${kc}">${u ? '+' : ''}${pc.toFixed(3)}%</span></div>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-[3px] text-[11px]">${row('បើក', formatNum(c.o, 2))}${row('ខ្ពស់', formatNum(c.h, 2))}${row('ទាប', formatNum(c.l, 2))}${row('បិទ', formatNum(c.c, 2), kc)}</div>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-[3px] text-[11px] mt-1.5 pt-1.5 border-t border-white/25">${row('ហាងទិញ', formatNum(sh.buyTael, 0), 'text-amber-300')}${row('ហាងលក់', formatNum(sh.sellTael, 0), 'text-teal-200')}</div>
+          <div class="text-[9px] text-white/50 mt-1">$ / ១ តម្លឹង (តាមគម្លាតបច្ចុប្បន្ន)</div>`;
+        const tw = tip.offsetWidth || 200, th = tip.offsetHeight || 130;
+        let tx = hv.x + 18; if (tx + tw > w - 4) tx = hv.x - 18 - tw;
+        tx = Math.max(4, tx);
+        const ty = Math.min(h - th - 4, Math.max(4, hv.y - th / 2));
+        tip.style.transform = `translate(${tx}px,${ty}px)`; tip.style.opacity = 1;
+      } else {
+        tip.style.opacity = 0;
+      }
+
+      // Header stats
+      const first = src[0], d = last.c - first.o, hp = d / first.o * 100, upH = d >= 0;
+      document.getElementById('lc-price').textContent = formatUSD(last.c, 2);
+      const chg = document.getElementById('lc-chg');
+      chg.textContent = `${upH ? '+' : ''}${d.toFixed(2)} (${upH ? '+' : ''}${hp.toFixed(2)}%)`;
+      chg.className = 'text-[11px] font-mono font-semibold ' + (upH ? 'text-emerald-400' : 'text-rose-400');
+      document.getElementById('lc-hi').textContent = formatNum(Math.max(...vis.map(c => c.h)), 2);
+      document.getElementById('lc-lo').textContent = formatNum(Math.min(...vis.map(c => c.l)), 2);
+      document.getElementById('lc-buy').textContent = formatNum(state.estBuyTael, 0);
+      document.getElementById('lc-sell').textContent = formatNum(state.estSellTael, 0);
+    }
+
+    function lcSetTf(s) { LC.tf = s; lcSeed(); lcSyncBtns(); lcReq(); }
+    function lcSetMode(m) { LC.mode = m; lcSyncBtns(); lcReq(); }
+    function lcSyncBtns() {
+      document.querySelectorAll('[data-tf]').forEach(b => b.classList.toggle('on', +b.dataset.tf === LC.tf));
+      document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === LC.g));
+      document.getElementById('lc-tf-seg').style.display = LC.g === 'live' ? '' : 'none';
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === LC.mode));
+      const live = !!state.liveSimInterval;
+      document.getElementById('lc-live-dot').className = 'w-2 h-2 rounded-full ' + (live ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500');
+      document.getElementById('lc-live-txt').textContent = live ? 'កំពុងរត់ Live' : 'បើក Live';
+    }
+
+    function lcInit() {
+      const cv = lcCv(), wrap = cv.parentElement;
+      lcSeed(); lcSyncBtns();
+      new ResizeObserver(() => {
+        const r = wrap.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+        LC.w = r.width; LC.h = r.height;
+        cv.width = r.width * d; cv.height = r.height * d;
+        cv.getContext('2d').setTransform(d, 0, 0, d, 0, 0);
+        lcReq();
+      }).observe(wrap);
+      const mv = e => { const r = cv.getBoundingClientRect(); LC.hover = { x: e.clientX - r.left, y: e.clientY - r.top }; lcReq(); };
+      cv.addEventListener('pointermove', e => {
+        if (LC.drag !== null && e.buttons && LC.view) { const k = Math.trunc((e.clientX - LC.drag) / LC.view.st); if (k) { LC.off = Math.max(0, LC.off + k); LC.drag += k * LC.view.st; } }
+        mv(e);
+      });
+      cv.addEventListener('pointerdown', e => { LC.drag = e.clientX; mv(e); });
+      window.addEventListener('pointerup', () => { LC.drag = null; });
+      cv.addEventListener('wheel', e => { if (e.ctrlKey || e.metaKey) { e.preventDefault(); lcZoom(e.deltaY < 0 ? 1.25 : 0.8); } }, { passive: false });
+      lcBuildDaily();
+      ['pointerleave', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => { LC.hover = null; lcReq(); }));
+      if (document.fonts) document.fonts.ready.then(lcReq);
+    }
+
+    // keep chart's Live button in sync with the simulation toggle
+    const _toggleLive = toggleLiveSimulation;
+    toggleLiveSimulation = function () { _toggleLive(); lcSyncBtns(); };
+
+    // ===== Zoom / History / Theme / Font =====
+    const DAY = 864e5, D0 = Date.UTC(2025, 0, 1);
+    const KM = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+    let DAILY = [];
+    const lcSrc = () => LC.g === 'live' ? LC.candles : LC.hist;
+    function lcZoom(f) { LC.z = f ? Math.min(8, Math.max(0.4, LC.z * f)) : 1; if (!f) LC.off = 0; lcReq(); }
+
+    function lcBuildDaily() { // deterministic simulated daily OHLC, anchored so "today" = current price
+      const pn = new Date(Date.now() + 7 * 3600000);
+      const today = Math.floor((Date.UTC(pn.getUTCFullYear(), pn.getUTCMonth(), pn.getUTCDate()) - D0) / DAY);
+      let s = 20250101; const rnd = () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+      let p = 2900; DAILY = [];
+      for (let i = 0; i <= today; i++) {
+        const o = p, c = o * (1 + (rnd() - 0.5) * 0.022);
+        DAILY.push({ t: D0 + i * DAY, o, c, h: Math.max(o, c) * (1 + rnd() * 0.006), l: Math.min(o, c) * (1 - rnd() * 0.006) });
+        p = c;
+      }
+      const off = (state.xauPrice || 3586) - DAILY[DAILY.length - 1].c;
+      DAILY.forEach(x => { x.o += off; x.c += off; x.h += off; x.l += off; });
+    }
+
+    const lcAgg = (a, t, lb, fl) => ({ t, lb, fl, o: a[0].o, c: a[a.length - 1].c, h: Math.max(...a.map(x => x.h)), l: Math.min(...a.map(x => x.l)) });
+
+    function lcBuildHist() {
+      const y = +document.getElementById('dt-year').value, m = +document.getElementById('dt-month').value, d = +document.getElementById('dt-day').value;
+      const sel = Date.UTC(y, m - 1, d), g = LC.g, out = [], grp = {};
+      const dm = t => { const x = new Date(t); return `${pad2(x.getUTCDate())}/${pad2(x.getUTCMonth() + 1)}`; };
+      DAILY.forEach(x => {
+        const dt = new Date(x.t), Y = dt.getUTCFullYear(), M = dt.getUTCMonth();
+        if (g === 'day' && Y === y && M === m - 1) out.push({ ...x, lb: pad2(dt.getUTCDate()), fl: `${dm(x.t)}/${Y}`, sel: dt.getUTCDate() === d });
+        else if (g === 'week' && Y === y) { const ws = x.t - ((dt.getUTCDay() + 6) % 7) * DAY; (grp[ws] = grp[ws] || []).push(x); }
+        else if (g === 'month' && Y === y) (grp[M] = grp[M] || []).push(x);
+        else if (g === 'year') (grp[Y] = grp[Y] || []).push(x);
+      });
+      Object.keys(grp).map(Number).sort((a, b) => a - b).forEach(k => {
+        const a = grp[k];
+        if (g === 'week') out.push({ ...lcAgg(a, k, dm(k), `${dm(a[0].t)} – ${dm(a[a.length - 1].t)}`), sel: sel >= k && sel < k + 7 * DAY });
+        else if (g === 'month') out.push({ ...lcAgg(a, a[0].t, KM[k], `${KM[k]} ${y}`), sel: k === m - 1 });
+        else out.push({ ...lcAgg(a, a[0].t, String(k), `ឆ្នាំ ${k}`), sel: k === y });
+      });
+      LC.hist = out;
+    }
+
+    function lcTable() {
+      const box = document.getElementById('lc-hist');
+      if (LC.g === 'live') { box.classList.add('hidden'); return; }
+      box.classList.remove('hidden');
+      const a = LC.hist, y = document.getElementById('dt-year').value, mo = KM[document.getElementById('dt-month').value - 1];
+      const T = { day: `កំណត់ត្រាថ្ងៃនីមួយៗ • ខែ${mo} ${y}`, week: `កំណត់ត្រាសប្តាហ៍នីមួយៗ • ឆ្នាំ ${y}`, month: `កំណត់ត្រាខែនីមួយៗ • ឆ្នាំ ${y}`, year: 'កំណត់ត្រាឆ្នាំនីមួយៗ' };
+      document.getElementById('lc-hist-title').textContent = T[LC.g];
+      const sum = document.getElementById('lc-hist-sum'), tb = document.getElementById('lc-hist-body');
+      if (!a.length) { sum.innerHTML = ''; tb.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400 font-sans">មិនទាន់មានទិន្នន័យសម្រាប់ពេលនេះ</td></tr>'; return; }
+      const hi = Math.max(...a.map(x => x.h)), lo = Math.min(...a.map(x => x.l)), ch = a[a.length - 1].c - a[0].o, pc = ch / a[0].o * 100;
+      const up = a.filter(x => x.c >= x.o).length, rg = a.reduce((t, x) => t + x.h - x.l, 0) / a.length;
+      const chip = (l, v, c = '') => `<div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"><div class="text-[11px] text-slate-500">${l}</div><div class="font-mono font-bold ${c}">${v}</div></div>`;
+      sum.innerHTML = chip('ខ្ពស់បំផុត', formatUSD(hi, 2)) + chip('ទាបបំផុត', formatUSD(lo, 2)) +
+        chip('ផ្លាស់ប្តូរសរុប', `${ch >= 0 ? '+' : ''}${ch.toFixed(2)} (${pc.toFixed(2)}%)`, ch >= 0 ? 'text-emerald-600' : 'text-rose-600') +
+        chip('ឡើង / ធ្លាក់', `${up} / ${a.length - up}`) + chip('ចន្លោះជាមធ្យម', formatUSD(rg, 2));
+      tb.innerHTML = [...a].reverse().map(c => {
+        const sh = computeShopPrices(c.c), p = (c.c - c.o) / c.o * 100, u = p >= 0;
+        return `<tr class="[&>td]:py-2 [&>td]:px-3 ${c.sel ? 'bg-amber-50 font-bold' : ''}"><td class="font-sans">${c.fl}</td><td>${formatNum(c.o, 2)}</td><td>${formatNum(c.h, 2)}</td><td>${formatNum(c.l, 2)}</td><td>${formatNum(c.c, 2)}</td><td class="font-bold ${u ? 'text-emerald-600' : 'text-rose-600'}">${u ? '+' : ''}${p.toFixed(2)}%</td><td class="font-bold text-amber-600">${formatNum(sh.buyTael, 0)}</td><td class="font-bold text-tealbrand-700">${formatNum(sh.sellTael, 0)}</td></tr>`;
+      }).join('');
+    }
+
+    function lcRefresh() { if (LC.g !== 'live') lcBuildHist(); LC.off = 0; lcTable(); lcReq(); }
+    function lcSetView(g) { LC.g = g; LC.z = 1; lcSyncBtns(); lcRefresh(); }
+
+    function setTheme(t) {
+      document.documentElement.classList.toggle('dark', t === 'dark');
+      document.getElementById('theme-btn').textContent = t === 'dark' ? '☀️' : '🌙';
+      try { localStorage.setItem('xau_theme', t); } catch (e) {}
+    }
+    function toggleTheme() { setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark'); }
+    function setFont(f) {
+      document.documentElement.style.setProperty('--kh', `"${f}"`); document.getElementById('font-sel').value = f;
+      try { localStorage.setItem('xau_font', f); } catch (e) {}
+      lcReq();
+    }
+    function bumpFs(d) {
+      const v = Math.min(1.4, Math.max(0.9, (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs')) || 1.12) + d));
+      document.documentElement.style.setProperty('--fs', v.toFixed(2));
+      try { localStorage.setItem('xau_fs', v.toFixed(2)); } catch (e) {}
+    }
+    function uiInit() {
+      let t = null, f = null, z = null;
+      try { t = localStorage.getItem('xau_theme'); f = localStorage.getItem('xau_font'); z = localStorage.getItem('xau_fs'); } catch (e) {}
+      setTheme(t || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+      setFont(f || 'Battambang');
+      if (z) document.documentElement.style.setProperty('--fs', z);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initDateTimeSelectors();
+      lcInit();
+      uiInit();
+      startLiveClocks();
+      loadSnapshots();
+      handleXauChange();
+    });
+  </script>
+</body>
+</html>

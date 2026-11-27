@@ -348,13 +348,107 @@
         </div>
       </div>
       <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-200"><h3 class="font-bold text-slate-800 text-sm">ប្រៀបធៀបតម្លៃពេលមុនៗ ធៀបនឹងពេលនេះ</h3></div>
-        <div class="overflow-auto max-h-[430px]"><table class="w-full text-left border-collapse">
+        <div class="px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2"><h3 class="font-bold text-slate-800 text-sm">ប្រៀបធៀបតម្លៃពេលមុនៗ ធៀបនឹងពេលនេះ</h3>
+          <div class="flex gap-1 text-[11px] font-semibold"><button type="button" id="cmp-b-num" onclick="cmpView('num')" class="px-2.5 py-1 rounded-lg bg-tealbrand-700 text-white">🔢 តួលេខ</button><button type="button" id="cmp-b-chart" onclick="cmpView('chart')" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">📊 ក្រាប</button></div></div>
+        <div id="cmp-tbl" class="overflow-auto max-h-[430px]"><table class="w-full text-left border-collapse">
           <thead class="sticky top-0"><tr class="bg-slate-50 text-slate-600 text-[11px] border-b border-slate-200 [&>th]:py-2 [&>th]:px-3 [&>th]:font-bold"><th>រយៈពេលមុន</th><th>XAU/USD <span id="cmp-unit-lbl" class="font-normal text-slate-400"></span></th><th>ប្រែប្រួលមកពេលនេះ</th><th>ហាង ទិញ / លក់ <span id="cmp-shop-lbl" class="font-normal text-slate-400"></span></th></tr></thead>
           <tbody id="cmp-body" class="divide-y divide-slate-100 text-xs font-mono"></tbody>
         </table></div>
+        <div id="cmp-chart" class="hidden p-3 bg-gradient-to-br from-teal-100/70 via-white to-amber-100/70"></div>
+        <p class="px-4 py-2 text-[10px] text-slate-400 border-t border-slate-100">ជួរមាន <span class="bg-amber-100 text-amber-700 rounded px-1">CSV</span> = តម្លៃមុនគណនាពី gold_only.csv (1 ថ្ងៃ, 30 ថ្ងៃ, 6 ខែ, 1 ឆ្នាំ, 5 ឆ្នាំ, 20 ឆ្នាំ) • ជួរផ្សេង = ទិន្នន័យ GC=F ក្នុងឯកសារ</p>
       </div>
     </section>
+
+<!-- Gold news -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+      <div class="bg-tealbrand-900 px-5 py-3.5 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-white font-semibold text-sm sm:text-base">📰 ព័ត៌មានមាសសំខាន់ៗ ពីប្រភពអាចទុកចិត្តបាន</h2>
+        <span class="text-[11px] bg-tealbrand-800 text-teal-100 px-2.5 py-1 rounded-lg border border-teal-700">ជ្រើសរើសនៅ 27/11/2026</span>
+      </div>
+      <div class="p-5 space-y-4 bg-gradient-to-br from-teal-100/60 via-white to-amber-100/60">
+        <div class="bg-amber-50/70 backdrop-blur border border-amber-200 rounded-xl p-3.5 text-xs text-slate-700 space-y-1.5">
+          <div class="font-bold text-amber-800 text-sm">ហេតុអ្វីតម្លៃមាសឡើងចុះឥឡូវនេះ?</div>
+          <div>📉 <b>Fed ដំឡើងអត្រា៖</b> ទីផ្សាររំពឹងថា Fed នឹងដំឡើងអត្រាការប្រាក់ខែធ្នូ ហើយមាសមិនបង់ការប្រាក់ ទើបអ្នកវិនិយោគលក់ចេញ។</div>
+          <div>💵 <b>ដុល្លាររឹង៖</b> សន្ទស្សន៍ដុល្លារខិតជិត 104 ខ្ពស់បំផុតតាំងពីខែមេសា 2025 ធ្វើឱ្យមាសថ្លៃសម្រាប់អ្នកទិញប្រើលុយផ្សេង។</div>
+          <div>🏦 <b>កម្លាំងទប់៖</b> ធនាគារកណ្តាលនៅតែទិញមាសច្រើន ហើយមាសនៅទាបជាងកំពូលខែមករា 2026 (ជាង $5,500) ប្រហែល ១ ភាគ ៣។</div>
+        </div>
+        <div class="text-[11px] text-slate-500">👆 ចុចលើកាតណាមួយ ដើម្បីមើលចំណុចសំខាន់ជាភាសាខ្មែរ រួចអានពេញលេញលើគេហទំព័រដើម</div>
+        <div id="news-list" class="grid md:grid-cols-2 gap-3"></div>
+        <div class="flex items-center justify-between pt-1 border-t border-slate-100"><h3 class="font-bold text-sm text-slate-800">🔴 ព័ត៌មានថ្មីៗ (ស្វ័យប្រវត្តិ)</h3><div class="flex items-center gap-2 text-[10px] text-slate-500"><span id="news-st">កំពុងទាញ...</span><button type="button" onclick="newsLive()" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-700">⟳ ធ្វើឱ្យថ្មី</button></div></div>
+        <div id="news-live" class="space-y-2"></div>
+        <div id="news-modal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-md items-center justify-center p-4" onclick="if(event.target===this)newsClose()"><div class="bg-white/85 backdrop-blur-xl border border-white/70 rounded-2xl max-w-lg w-full max-h-[88vh] overflow-auto shadow-2xl"><div id="news-md"></div></div></div>
+        <div class="rounded-xl border border-slate-200 overflow-hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-3.5 py-2 border-b border-slate-200">
+            <div class="text-xs font-bold text-slate-700">🔴 ចំណងជើងព័ត៌មានមាសថ្មីៗ (ធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិ)</div>
+            <div class="flex items-center gap-2 text-[10px] text-slate-400"><span id="nl-time"></span><button type="button" onclick="newsLive()" class="px-2 py-1 rounded-lg bg-white border border-slate-300 text-slate-600 font-semibold hover:bg-slate-100">🔄 ផ្ទុកឡើងវិញ</button></div>
+          </div>
+          <div id="news-live" class="divide-y divide-slate-100 text-xs"><div class="p-3 text-slate-400">កំពុងផ្ទុក...</div></div>
+          <div class="px-3.5 py-1.5 text-[10px] text-slate-400 bg-slate-50 border-t border-slate-100">ចំណងជើងជាភាសាអង់គ្លេសតាម Google News ចុចដើម្បីអានពេញលេញលើគេហទំព័រដើម។ ការសង្ខេបខ្មែរមានតែកាតខាងលើ។</div>
+        </div>
+        <div class="border border-slate-200 rounded-xl p-3.5">
+          <div class="flex items-center justify-between mb-1"><h3 class="font-bold text-slate-800 text-sm">🔴 ព័ត៌មានថ្មីបំផុត (ស្វ័យប្រវត្តិ • ភាសាអង់គ្លេស)</h3><div class="flex items-center gap-2"><span id="news-live-st" class="text-[10px] text-slate-400">កំពុងទាញ...</span><button type="button" onclick="newsLive()" class="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200">🔄</button></div></div>
+          <div id="news-live" class="text-xs text-slate-400">កំពុងទាញ...</div>
+          <p class="text-[10px] text-slate-400 mt-1">ចម្រាញ់តែប្រភព Reuters, Kitco, CNBC, Bloomberg, WSJ, FT, AP, BBC, MarketWatch, Barron's</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-[11px]">
+          <span class="text-slate-500">មើលព័ត៌មានថ្មីបំផុត៖</span>
+          <a class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold" href="https://www.kitco.com/news" target="_blank" rel="noopener">Kitco</a>
+          <a class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold" href="https://www.reuters.com/markets/commodities/" target="_blank" rel="noopener">Reuters</a>
+          <a class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold" href="https://www.gold.org/news-and-events" target="_blank" rel="noopener">World Gold Council</a>
+          <a class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold" href="https://www.cnbc.com/commodities/" target="_blank" rel="noopener">CNBC</a>
+        </div>
+        <p class="text-[10px] text-slate-400">ការសង្ខេបជាភាសាខ្មែរនេះសរសេរឡើងវិញដោយខ្លួនឯង មិនមែនជាការបកប្រែពាក្យដើមទេ។ សូមចុចអានប្រភពដើមដើម្បីផ្ទៀងផ្ទាត់។ មិនមែនជាយោបល់វិនិយោគ។</p>
+      </div>
+    </section>
+    <script>
+      (function () {
+        const esc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const tr = u => 'https://translate.google.com/translate?sl=en&tl=km&u=' + encodeURIComponent(u);
+        const C = [
+          ['26/11/2026', 'Business Recorder', 'មាសងើបបន្តិច ក្រោយធ្លាក់ទាបបំផុត ១៥ ខែ', 'មាសធ្លាក់ក្រោម $3,500 ជាលើកដំបូងតាំងពីខែកញ្ញា 2025 កាលពីថ្ងៃពុធ រួចងើបមកប្រហែល $3,590 ថ្ងៃព្រហស្បតិ៍។', ['ទិន្នន័យអតិផរណាអាមេរិកខ្លាំង ធ្វើឱ្យទីផ្សារកាន់តែរំពឹងថា Fed ដំឡើងអត្រា ដែលសង្កត់លើតម្លៃមាស។'], 'https://www.brecorder.com/news/40450827/gold-ticks-up-after-hitting-15-month-low-fed-outlook-in-focus', 'neu', 'ការងើបនេះតូច ហើយមាសនៅស្ថិតក្នុងសម្ពាធពី Fed និងដុល្លារ។'],
+          ['24/11/2026', 'Jiji Press', 'មាសធ្លាក់ជាង 2% ខណៈទីផ្សារគិតថា Fed នឹងដំឡើងអត្រា', 'មាសធ្លាក់មក ~$3,557 ក្រោយលោក John Williams (Fed ញូវយ៉ក) និយាយថាអតិផរណាខ្ពស់នៅតែបន្ត ត្រូវការគោលនយោបាយតឹងជាង។', ['ធនាគារ JPMorgan ព្យាករតម្លៃមាស $4,500 នៅចុងឆ្នាំ 2027។', 'ធនាគារ Commerzbank ព្យាករ $4,100។'], 'https://jen.jiji.com/partners/nation/20261125NATION-40073885/', 'bear', 'អ្នកវិភាគធំៗនៅរំពឹងថាមាសនឹងងើបវិញនៅចុងឆ្នាំ 2027 ប៉ុន្តែរយៈខ្លីនៅមានសម្ពាធ។'],
+          ['20/11/2026', 'USAGold (សង្ខេបតាម CNBC)', 'សប្តាហ៍អាក្រក់បំផុតរបស់មាសក្នុងរយៈ ៨ ខែ', 'មាសចុះមក ~$3,558 ដោយសារដុល្លាររឹង និងឱកាសដំឡើងអត្រា Fed ខែធ្នូ ជិត 99% តាមទីផ្សារ។', ['តម្លៃនេះទាបជាងកំពូលខែមករា 2026 ប្រមាណ 36%។', 'USAGold ជាអ្នកលក់មាស សូមផ្ទៀងផ្ទាត់ជាមួយ CNBC។'], 'https://www.usagold.com/daily-precious-metals-market-report-november-20-2026/', 'bear', 'ការដំឡើងអត្រាត្រូវបានគិតទុកក្នុងតម្លៃស្ទើរតែទាំងស្រុងហើយ។'],
+          ['03/11/2026', 'World Gold Council', 'ធនាគារកណ្តាលទិញមាស 321 តោន ក្នុងត្រីមាសទី 3 (+42%)', 'ការទិញសរុប 675 តោនក្នុង 9 ខែ (+6%) ខណៈតម្លៃខ្ពស់ធ្វើឱ្យការទិញគ្រឿងអលង្ការ និងមាសកាក់/កំណាត់ថយចុះ។', ['តម្រូវការសរុប 1,369 តោន (-1%) ហើយមូលនិធិ ETF ត្រឡប់មកទិញវិញ។'], 'https://www.gold.org/news-and-events/press-releases/central-bank-buying-and-etf-inflows-support-gold-demand-q3/', 'bull', 'ធនាគារកណ្តាលជាអ្នកទិញធំ ជួយទប់តម្រូវការមាសពេលអ្នកទិញតូចថយចុះ។']
+        ];
+        let LV = [];
+        const link = (u, l, c) => `<a href="${esc(u)}" target="_blank" rel="noopener" class="inline-block px-3 py-1.5 rounded-lg text-xs font-semibold ${c}">${l}</a>`;
+        const SENT = { bull: ['📈 ទិសដៅទីផ្សារ៖ ជំរុញតម្លៃឡើង (Bullish)', 'bg-emerald-100/80 text-emerald-800 border-emerald-200'], bear: ['📉 ទិសដៅទីផ្សារ៖ សង្កត់តម្លៃចុះ (Bearish)', 'bg-rose-100/80 text-rose-800 border-rose-200'], neu: ['⚖️ ទិសដៅទីផ្សារ៖ មិនទាន់ច្បាស់ (Neutral)', 'bg-slate-100/80 text-slate-700 border-slate-200'] };
+        const agoK = ms => { const m = Math.max(1, Math.round(ms / 6e4)); return m < 60 ? m + ' នាទីមុន' : m < 1440 ? Math.round(m / 60) + ' ម៉ោងមុន' : Math.round(m / 1440) + ' ថ្ងៃមុន'; };
+        const agoD = d => { const [dd, mm, yy] = d.split('/'); return agoK(Date.now() - Date.UTC(yy, mm - 1, dd, 12)); };
+        const modal = (src, ago, sk, title, take, paras, u, note) => `<div class="sticky top-0 px-5 py-4 bg-slate-900/95 backdrop-blur flex items-center justify-between"><div class="flex items-center gap-2.5"><span class="bg-amber-500 text-slate-900 text-xs font-bold px-2.5 py-1 rounded-lg">${esc(src)}</span><span class="text-slate-300 text-xs">${ago}</span></div><button type="button" onclick="newsClose()" class="text-slate-300 hover:text-white text-xl leading-none">✕</button></div>
+          <div class="p-5 space-y-4"><span class="inline-block text-xs font-bold px-3 py-1.5 rounded-full border ${SENT[sk][1]}">${SENT[sk][0]}</span>
+          <h3 class="font-extrabold text-xl leading-snug text-slate-900">${esc(title)}</h3>
+          ${take ? `<div class="bg-amber-50/80 border-l-4 border-amber-500 rounded-xl p-3.5"><div class="text-[11px] font-bold text-amber-800 mb-1">ចំណុចសំខាន់សម្រាប់អ្នកវិនិយោគមាស (KEY TAKEAWAY)</div><div class="text-sm font-semibold text-slate-800 leading-relaxed">${take}</div></div>` : ''}
+          ${paras.map(x => `<p class="text-sm text-slate-600 leading-relaxed">${x}</p>`).join('')}
+          ${note ? `<p class="text-[11px] text-slate-400">${note}</p>` : ''}
+          <div class="border-t border-slate-200/80 pt-3 text-xs text-slate-500">ប្រភពដើម៖ <b class="text-slate-800">${esc(src)}</b></div>
+          <div class="grid grid-cols-2 gap-2"><button type="button" onclick="newsClose()" class="py-2.5 rounded-xl text-sm font-bold border border-slate-300 text-slate-700 bg-white/70">បិទផ្ទាំងនេះ</button>${link(u, 'អានអត្ថបទដើម ↗', 'bg-amber-600 hover:bg-amber-700 text-white text-center !text-sm !py-2.5 !rounded-xl !font-bold')}</div>
+          ${link(tr(u), '🌐 អានជាខ្មែរពេញ (Google Translate)', 'block text-center bg-slate-100/80 text-slate-700')}</div>`;
+        window.newsOpen = (k, i) => {
+          const m = document.getElementById('news-modal'), md = document.getElementById('news-md');
+          if (k === 'c') { const o = C[i]; md.innerHTML = modal(o[1], agoD(o[0]), o[6], o[2], o[7], [o[3], ...o[4]], o[5], ''); }
+          else { const o = LV[i]; md.innerHTML = modal(o.src, agoK(Date.now() - o.ts), o.tag.includes('ធ្លាក់') ? 'bear' : o.tag.includes('ឡើង') ? 'bull' : 'neu', o.t, '', [o.tag], o.u, 'ចំណងជើងដើមជាភាសាអង់គ្លេស • ស្លាកខ្មែរបង្កើតស្វ័យប្រវត្តិតាមពាក្យគន្លឹះ មិនមែនការបកប្រែពេញទេ'); }
+          m.classList.remove('hidden'); m.classList.add('flex');
+        };
+        window.newsClose = () => { const m = document.getElementById('news-modal'); m.classList.add('hidden'); m.classList.remove('flex'); };
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') newsClose(); });
+        document.getElementById('news-list').innerHTML = C.map((o, i) => `<article onclick="newsOpen('c',${i})" class="cursor-pointer border border-white/80 bg-white/55 backdrop-blur-md shadow-sm rounded-2xl p-3.5 flex flex-col gap-1.5 hover:bg-white/80 hover:shadow-md transition"><div class="flex items-center justify-between text-[10px]"><span class="bg-amber-500 text-slate-900 font-bold px-2 py-0.5 rounded-md">${o[1]}</span><span class="text-slate-400">${agoD(o[0])}</span></div><span class="self-start text-[10px] font-bold px-2 py-0.5 rounded-full border ${SENT[o[6]][1]}">${SENT[o[6]][0].split('៖')[1]}</span><h3 class="font-bold text-slate-800 text-sm leading-snug">${o[2]}</h3><p class="text-xs text-slate-600 leading-relaxed">${o[3]}</p><span class="text-[11px] font-semibold text-amber-700 mt-auto">ចុចអានលម្អិត →</span></article>`).join('');
+        const TRUST = /reuters|kitco|cnbc|bloomberg|world gold council|gold\.org|financial times|wall street journal|wsj|marketwatch|associated press|bbc|business recorder|investing\.com|barron|fxstreet/i;
+        const tag = t => { t = t.toLowerCase(); let k = /fall|drop|slid|slump|tumbl|plung|declin|lose|low|weigh|retreat/.test(t) ? '📉 មាសធ្លាក់' : /rise|gain|jump|surg|rebound|rall|climb|high|steady|up\b/.test(t) ? '📈 មាសឡើង' : '📰 ព័ត៌មានទីផ្សារ';
+          if (/fed|rate|inflation|cpi/.test(t)) k += ' • Fed/អត្រា/អតិផរណា'; if (/dollar|yield/.test(t)) k += ' • ដុល្លារ/ទិន្នផល'; if (/central bank|etf|demand/.test(t)) k += ' • ធនាគារកណ្តាល/តម្រូវការ'; return k; };
+        window.newsLive = async () => {
+          const st = document.getElementById('news-st'), el = document.getElementById('news-live');
+          try {
+            const x = await getText('https://news.google.com/rss/search?q=' + encodeURIComponent('gold price when:3d') + '&hl=en-US&gl=US&ceid=US:en'), doc = new DOMParser().parseFromString(x, 'text/xml');
+            LV = [...doc.querySelectorAll('item')].map(i => { const q = s => (i.querySelector(s) || {}).textContent || '', dt = new Date(q('pubDate')), src = q('source'); return { t: q('title').replace(/\s+-\s+[^-]+$/, ''), u: q('link'), src, ts: dt, d: dt.toLocaleString('en-GB', { timeZone: 'Asia/Phnom_Penh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }; }).filter(o => TRUST.test(o.src)).sort((a, b) => b.ts - a.ts).slice(0, 8);
+            LV.forEach(o => o.tag = tag(o.t));
+            el.innerHTML = LV.length ? LV.map((o, i) => `<div onclick="newsOpen('l',${i})" class="cursor-pointer border border-white/80 bg-white/55 backdrop-blur-md shadow-sm rounded-xl px-3 py-2 hover:bg-white/80 transition"><div class="flex justify-between text-[10px]"><b class="text-tealbrand-700">${esc(o.src)}</b><span class="font-mono text-slate-400">${o.d}</span></div><div class="text-[11px] font-semibold text-amber-700">${o.tag}</div><div class="text-xs text-slate-700">${esc(o.t)}</div></div>`).join('') : '<div class="text-xs text-slate-400">មិនមានព័ត៌មានពីប្រភពទុកចិត្តក្នុង ៣ ថ្ងៃចុងក្រោយ</div>';
+            st.textContent = 'ធ្វើបច្ចុប្បន្នភាព ' + new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', minute: '2-digit' }) + ' • ស្វ័យប្រវត្តិរៀងរាល់ ១០ នាទី';
+          } catch (e) { st.textContent = 'មិនអាចទាញព័ត៌មានថ្មី (ពិនិត្យអ៊ីនធឺណិត) • បង្ហាញតែព័ត៌មានខាងលើ'; }
+        };
+        window.addEventListener('load', () => { newsLive(); setInterval(newsLive, 600000); });
+      })();
+    </script>
 
     <!-- History records -->
     <section id="lc-hist" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
@@ -389,7 +483,7 @@
               </h2>
             </div>
             <span class="text-[11px] bg-tealbrand-800 text-teal-100 px-2.5 py-1 rounded-lg border border-teal-700 font-mono">
-              ១ តម្លឹង = 26.84 ជី • ១ អោន = 8.33 ជី = 31.10 g
+              ១ តម្លឹង = 10 ជី = 37.26 g • ១ អោន = 8.34 ជី = 31.06 g
             </span>
           </div>
 
@@ -457,7 +551,7 @@
                 </div>
                 <div class="text-[11px] text-slate-400 flex justify-between border-t border-slate-800 pt-2">
                   <span>តម្លៃ ១ ក្រាម៖ <strong id="raw-gram-price" class="text-slate-200 font-mono">$115.29</strong></span>
-                  <span>(37.5g / តម្លឹង)</span>
+                  <span>(37.26g / តម្លឹង)</span>
                 </div>
               </div>
             </div>
@@ -538,7 +632,7 @@
                 </div>
                 <div class="mt-3 pt-2.5 border-t border-amber-200/70 grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span class="text-slate-500 block">១ ជី (3.75g)៖</span>
+                    <span class="text-slate-500 block">១ ជី (3.726g)៖</span>
                     <span id="est-buy-chi" class="font-bold font-mono text-slate-800">$435.00</span>
                   </div>
                   <div class="text-right">
@@ -564,7 +658,7 @@
                 </div>
                 <div class="mt-3 pt-2.5 border-t border-tealbrand-200/70 grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span class="text-slate-500 block">១ ជី (3.75g)៖</span>
+                    <span class="text-slate-500 block">១ ជី (3.726g)៖</span>
                     <span id="est-sell-chi" class="font-bold font-mono text-slate-800">$437.00</span>
                   </div>
                   <div class="text-right">
@@ -902,8 +996,12 @@
 
   <!-- Main Application Script -->
   <script>
-    // Conversion factor: 37.5 grams per Cambodian Tamlung / 31.1034768 grams per Troy Ounce
-    const OZ_TO_TAEL = 37.5 / 31.1034768;
+    // Conversion factors: see CHI_PER_G / OZ_PER_G below
+    // ===== Unit constants (កែនៅទីនេះបានតែមួយកន្លែង) =====
+    const CHI_PER_G = 0.2684;   // 1 ក្រាម = 0.2684 ជី
+    const OZ_PER_G  = 0.0322;   // 1 ក្រាម = 0.0322 អោន
+    const G_PER_CHI = 1 / CHI_PER_G, G_PER_OZ = 1 / OZ_PER_G, G_PER_TAEL = 10 * G_PER_CHI;
+    const OZ_TO_TAEL = G_PER_TAEL / G_PER_OZ;   // 1 តម្លឹង = 10 ជី
 
     const state = {
       xauPrice: 3586.00,
@@ -1068,7 +1166,7 @@
     function computeShopPrices(xauOz) {
       const rawTael = xauOz * OZ_TO_TAEL;
       const rawChi = rawTael / 10;
-      const rawGram = xauOz / 31.1034768;
+      const rawGram = xauOz / G_PER_OZ;
       const buyTael = mround(rawTael + state.premium, state.roundStep);
       const sellTael = buyTael + state.spread;
 
@@ -1080,8 +1178,8 @@
         sellTael,
         buyChi: buyTael / 10,
         sellChi: sellTael / 10,
-        buyGram: buyTael / 37.5,
-        sellGram: sellTael / 37.5
+        buyGram: buyTael / G_PER_TAEL,
+        sellGram: sellTael / G_PER_TAEL
       };
     }
 
@@ -1266,7 +1364,7 @@
 
       // 1 Tamlung = 10 Chi, 1 Hun = 0.1 Chi
       const totalChi = (tael * 10) + chi + (hun / 10);
-      const totalGrams = totalChi * 3.75;
+      const totalGrams = totalChi * G_PER_CHI;
       const goldSubtotal = totalChi * (shopPrice / 10);
       const totalUSD = goldSubtotal + fee;
       const totalKHR = Math.round(totalUSD * khrRate);
@@ -1769,10 +1867,9 @@
     const KM = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
     let DAILY = [];
     const lcSrc = () => LC.g === 'live' ? LC.candles : LC.hist;
-    const G_PER_OZ = 31.1034768;
     const lcU = () => ({ oz: 1, tael: OZ_TO_TAEL, chi: OZ_TO_TAEL / 10, gram: 1 / G_PER_OZ })[LC.unit];
     // shop price (stored per tael) converted to the selected unit
-    const shopU = t => ({ oz: t, tael: t, chi: t / 10, gram: t / 37.5 })[LC.unit];
+    const shopU = t => ({ oz: t, tael: t, chi: t / 10, gram: t / G_PER_TAEL })[LC.unit];
     const shopFmt = t => formatNum(shopU(t), { oz: 0, tael: 0, chi: 1, gram: 2 }[LC.unit]);
     const UNIT_KH = { oz: 'អោន', tael: 'តម្លឹង', chi: 'ជី', gram: 'ក្រាម' };
     function lcSetUnit(u) { LC.unit = u; lcSyncBtns(); lcTable(); lcInfo(); lcReq(); }
@@ -1893,6 +1990,45 @@
       document.getElementById('mk-count').textContent = (o ? 'បិទក្នុងរយៈពេល ' : 'បើកក្នុងរយៈពេល ') + (d ? d + ' ថ្ងៃ ' : '') + (h ? h + ' ម៉ោង ' : '') + (k % 60) + ' នាទី';
     }
 
+
+    // ===== gold_only.csv : Amount = (ឥឡូវ − តម្លៃមុន) ជា $/អោន, % ធៀបនឹងតម្លៃមុន =====
+    const CMP_CSV = { d1: { a: 87.96, p: 2.49 }, d30: { a: -481.61, p: -11.98 }, m6: { a: -964.16, p: -21.42 }, y1: { a: -681.49, p: -16.15 }, y5: { a: 1742.60, p: 97.07 }, y20: { a: 2899.16, p: 454.00 } };
+    const CMP_NOW = CMP_CSV.y20.a * (1 + 100 / CMP_CSV.y20.p); // តម្លៃ "ឥឡូវ" ក្នុង CSV (ជួរ 20 ឆ្នាំ % ធំបំផុត → ភាពលម្អៀងតិចបំផុត)
+    const cmpPast = k => k === 'd1' ? CMP_CSV.d1.a / (CMP_CSV.d1.p / 100) : CMP_NOW - CMP_CSV[k].a; // តម្លៃមុន $/អោន
+    const CMP = { rows: [], P: 0, U: 1 };
+    function cmpView(v) {
+      const c = v === 'chart', on = 'px-2.5 py-1 rounded-lg bg-tealbrand-700 text-white', off = 'px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600';
+      document.getElementById('cmp-tbl').classList.toggle('hidden', c);
+      document.getElementById('cmp-chart').classList.toggle('hidden', !c);
+      document.getElementById('cmp-b-num').className = c ? off : on; document.getElementById('cmp-b-chart').className = c ? on : off;
+      if (c) cmpChart();
+    }
+    function cmpStyle(m) { CMP.style = m; cmpChart(); }
+    function cmpChart() {
+      const box = document.getElementById('cmp-chart'); if (!box || !CMP.rows.length) return;
+      const st = CMP.style || 'bar', U = CMP.U, now = CMP.P * U, rows = CMP.rows.filter(r => r.c != null).reverse(), n = rows.length;
+      const W = 720, H = 340, L0 = 58, B0 = 44, T0 = 32, bw = (W - L0 - 12) / n, mx = Math.max(now, ...rows.map(r => r.c * U)) * 1.15;
+      const y = v => T0 + (H - T0 - B0) * (1 - v / mx), fm = v => formatNum(v, mx >= 1000 ? 0 : 2), G = '#10b981', R = '#f43f5e', base = y(0);
+      let s = `<svg viewBox="0 0 ${W} ${H}" class="w-full h-auto font-mono" role="img"><defs><linearGradient id="gU" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ee7b7"/><stop offset="1" stop-color="#10b981"/></linearGradient><linearGradient id="gD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fda4af"/><stop offset="1" stop-color="#f43f5e"/></linearGradient><linearGradient id="gA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14b8a6" stop-opacity=".55"/><stop offset="1" stop-color="#14b8a6" stop-opacity=".03"/></linearGradient></defs>`;
+      for (let i = 0; i <= 4; i++) { const v = mx * i / 4; s += `<line x1="${L0}" x2="${W - 8}" y1="${y(v)}" y2="${y(v)}" stroke="#e2e8f0" stroke-dasharray="${i ? 3 : 0}"/><text x="${L0 - 7}" y="${y(v) + 3}" font-size="10" text-anchor="end" fill="#64748b">${fm(v)}</text>`; }
+      const pts = rows.map((r, i) => ({ r, v: r.c * U, cx: L0 + i * bw + bw / 2, pc: (CMP.P - r.c) / r.c * 100 }));
+      if (st === 'mountain') {
+        const d = pts.map((q, i) => (i ? 'L' : 'M') + q.cx + ' ' + y(q.v)).join(' ');
+        s += `<path d="${d} L${pts[n - 1].cx} ${base} L${pts[0].cx} ${base}Z" fill="url(#gA)"/><path d="${d}" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-linejoin="round"/>`;
+      }
+      pts.forEach(q => {
+        const up = now >= q.v, col = up ? G : R, t = `<title>${q.r.lb}: $${fm(q.v)} → ឥឡូវ $${fm(now)} (${q.pc >= 0 ? '+' : ''}${q.pc.toFixed(2)}%)</title>`;
+        let top = y(q.v);
+        if (st === 'bar') { const w = bw * .62; s += `<g>${t}<rect x="${q.cx - w / 2}" y="${top}" width="${w}" height="${base - top}" rx="6" fill="url(#${up ? 'gU' : 'gD'})" fill-opacity=".62" stroke="${col}" stroke-opacity=".9" stroke-width="1.2"/><rect x="${q.cx - w / 2 + 3}" y="${top + 3}" width="${Math.min(5, w / 4)}" height="${Math.max(0, base - top - 6)}" rx="2.5" fill="#fff" fill-opacity=".35"/>`; }
+        else if (st === 'candle') { const w = bw * .5, y1 = y(q.v), y2 = y(now); top = Math.min(y1, y2); s += `<g>${t}<line x1="${q.cx}" x2="${q.cx}" y1="${top - 7}" y2="${Math.max(y1, y2) + 7}" stroke="${col}" stroke-width="2"/><rect x="${q.cx - w / 2}" y="${top}" width="${w}" height="${Math.max(3, Math.abs(y1 - y2))}" rx="4" fill="${col}" fill-opacity=".62" stroke="${col}" stroke-width="1.5"/>`; }
+        else s += `<g>${t}<circle cx="${q.cx}" cy="${top}" r="4.5" fill="#fff" stroke="${col}" stroke-width="2.5"/>`;
+        const lab = (q.pc >= 0 ? '+' : '') + q.pc.toFixed(0) + '%', pw = lab.length * 6 + 10;
+        s += `<rect x="${q.cx - pw / 2}" y="${top - (st === 'candle' ? 32 : 25)}" width="${pw}" height="16" rx="8" fill="${col}"/><text x="${q.cx}" y="${top - (st === 'candle' ? 20 : 13)}" font-size="9.5" font-weight="700" text-anchor="middle" fill="#fff">${lab}</text><text x="${q.cx}" y="${H - B0 + 16}" font-size="9.5" text-anchor="middle" fill="#475569">${q.r.lb}</text></g>`;
+      });
+      s += `<line x1="${L0}" x2="${W - 8}" y1="${y(now)}" y2="${y(now)}" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="6 4"/><rect x="${L0 + 8}" y="${y(now) - 24}" width="132" height="18" rx="9" fill="#0f766e"/><text x="${L0 + 74}" y="${y(now) - 11}" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">ឥឡូវ $${fm(now)}</text></svg>`;
+      const bt = (k, l) => `<button type="button" onclick="cmpStyle('${k}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold ${st === k ? 'bg-tealbrand-700 text-white' : 'bg-slate-100 text-slate-600'}">${l}</button>`;
+      box.innerHTML = `<div class="flex gap-1 mb-2">${bt('bar', '▮ កំណាត់ឈរ')}${bt('mountain', '⛰ ភ្នំ')}${bt('candle', '🕯 ទៀន')}</div>` + s + `<p class="text-[11px] text-slate-500 mt-1">តម្លៃពេលមុន ($/${UNIT_KH[LC.unit]}) • % = ប្រែប្រួលមកពេលនេះ • <span class="text-emerald-600 font-semibold">បៃតង</span> = ពេលនេះថ្លៃជាង • <span class="text-rose-600 font-semibold">ក្រហម</span> = ថោកជាង • ទៀន = ពីតម្លៃមុន → ឥឡូវ • ដាក់កណ្ដុរលើដើម្បីមើលលម្អិត</p>`;
+    }
     function dailyAt(t) { // last real daily candle on or before t
       let lo = 0, hi = DAILY.length - 1, r = null;
       while (lo <= hi) { const m = (lo + hi) >> 1; if (DAILY[m].t <= t) { r = DAILY[m]; lo = m + 1; } else hi = m - 1; }
@@ -1911,14 +2047,17 @@
       document.getElementById('cmp-unit-lbl').textContent = '($/' + UNIT_KH[LC.unit] + ')';
       document.getElementById('cmp-shop-lbl').textContent = '(/' + (LC.unit === 'oz' ? 'តម្លឹង' : UNIT_KH[LC.unit]) + ' • ប៉ាន់ស្មាន)';
       const T = new Date(td.t), Y = T.getUTCFullYear(), M = T.getUTCMonth(), D = T.getUTCDate();
-      const L = [['1 ថ្ងៃ', Date.UTC(Y, M, D - 1)], ['3 ថ្ងៃ', Date.UTC(Y, M, D - 3)], ['7 ថ្ងៃ', Date.UTC(Y, M, D - 7)], ['1 ខែ', Date.UTC(Y, M - 1, D)], ['3 ខែ', Date.UTC(Y, M - 3, D)], ['6 ខែ', Date.UTC(Y, M - 6, D)], ['9 ខែ', Date.UTC(Y, M - 9, D)], ...[1, 2, 3, 4, 5, 15, 20].map(k => [k + ' ឆ្នាំ', Date.UTC(Y - k, M, D)])];
-      document.getElementById('cmp-body').innerHTML = L.map(([lb, t]) => {
-        const c = t >= DAILY[0].t ? dailyAt(t) : null, x = new Date(t);
-        const dt = `${pad2(x.getUTCDate())}/${pad2(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
-        if (!c) return `<tr class="[&>td]:py-2 [&>td]:px-3"><td class="font-sans">${lb}<div class="text-[10px] text-slate-400 font-mono">${dt}</div></td><td colspan="3" class="text-slate-400 font-sans">គ្មានទិន្នន័យ</td></tr>`;
-        const d = (P - c.c) * U, p = (P - c.c) / c.c * 100, u = d >= 0, sh = computeShopPrices(c.c);
-        return `<tr class="[&>td]:py-2 [&>td]:px-3"><td class="font-sans font-semibold">${lb}<div class="text-[10px] text-slate-400 font-mono font-normal">${dt}</div></td><td>$${f(c.c * U)}</td><td class="font-bold ${u ? 'text-emerald-600' : 'text-rose-600'}">${u ? '+' : ''}${d.toFixed(2)}<div class="text-[10px] font-normal">${u ? '+' : ''}${p.toFixed(2)}%</div></td><td><span class="text-amber-600 font-bold">${shopFmt(sh.buyTael)}</span> / <span class="text-tealbrand-700 font-bold">${shopFmt(sh.sellTael)}</span></td></tr>`;
+      const L = [['1 ថ្ងៃ', Date.UTC(Y, M, D - 1), 'd1'], ['3 ថ្ងៃ', Date.UTC(Y, M, D - 3)], ['7 ថ្ងៃ', Date.UTC(Y, M, D - 7)], ['30 ថ្ងៃ', Date.UTC(Y, M, D - 30), 'd30'], ['3 ខែ', Date.UTC(Y, M - 3, D)], ['6 ខែ', Date.UTC(Y, M - 6, D), 'm6'], ['9 ខែ', Date.UTC(Y, M - 9, D)], ...[1, 2, 3, 4, 5, 15, 20].map(k => [k + ' ឆ្នាំ', Date.UTC(Y - k, M, D), { 1: 'y1', 5: 'y5', 20: 'y20' }[k]])];
+      const R = L.map(([lb, t, k]) => ({ lb, t, k, c: k ? cmpPast(k) : (t >= DAILY[0].t ? (dailyAt(t) || {}).c ?? null : null) }));
+      CMP.rows = R; CMP.P = P; CMP.U = U;
+      document.getElementById('cmp-body').innerHTML = R.map(({ lb, t, k, c }) => {
+        const x = new Date(t), dt = `${pad2(x.getUTCDate())}/${pad2(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+        const tag = k ? ' <span class="text-[9px] bg-amber-100 text-amber-700 rounded px-1 font-normal">CSV</span>' : '';
+        if (c == null) return `<tr class="[&>td]:py-2 [&>td]:px-3"><td class="font-sans">${lb}<div class="text-[10px] text-slate-400 font-mono">${dt}</div></td><td colspan="3" class="text-slate-400 font-sans">គ្មានទិន្នន័យ</td></tr>`;
+        const d = (P - c) * U, p = (P - c) / c * 100, u = d >= 0, sh = computeShopPrices(c);
+        return `<tr class="[&>td]:py-2 [&>td]:px-3"><td class="font-sans font-semibold">${lb}${tag}<div class="text-[10px] text-slate-400 font-mono font-normal">${dt}</div></td><td>$${f(c * U)}</td><td class="font-bold ${u ? 'text-emerald-600' : 'text-rose-600'}">${u ? '+' : ''}${d.toFixed(2)}<div class="text-[10px] font-normal">${u ? '+' : ''}${p.toFixed(2)}%</div></td><td><span class="text-amber-600 font-bold">${shopFmt(sh.buyTael)}</span> / <span class="text-tealbrand-700 font-bold">${shopFmt(sh.sellTael)}</span></td></tr>`;
       }).join('');
+      cmpChart();
     }
 
     // ===== REAL market data =====
